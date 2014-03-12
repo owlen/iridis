@@ -5,10 +5,11 @@ clean () {
     ${bitcoincmd}alice stop
     ${bitcoincmd}bob stop
 }
+trap clean EXIT
 
 # Run local testnet
 pgrep -f "bitcoin" &&
-echo 'found something that looks like a running bitcoin client, not taking any chances' > "$errlog" &&
+echo 'found something that looks like a running bitcoin client, not taking any chances' &&
 exit 1
 
 ${bitcoincmd}alice
@@ -62,21 +63,19 @@ cashout="$(${bitcoincmd}alice signrawtransaction "$cashout" "$txin" "$key" | get
 key="[\"$bpriv\"]"
 cashout="$(${bitcoincmd}bob signrawtransaction "$cashout" "$txin" "$key" | getjsval hex)"
 
-# bob checks his balance and block count
+# bob checks his balance
 balance="$(${bitcoincmd}bob getbalance)"
-blocks="$(${bitcoincmd}bob getblockcount)"
-echo "bob has $balance in block $blocks"
+echo "Block $(${bitcoincmd}bob getblockcount) and bob has $balance"
 
 # alice broadcasts both transactions (she is the only one with broadcasting power in our local testnet)
+echo Broadcasting transactions
 ${bitcoincmd}alice sendrawtransaction "$dang"
 ${bitcoincmd}alice sendrawtransaction "$cashout"
-sleep 10
 
-# Now we wait a block and see if bob's balance increased
-while [ "$blocks" = "$(${bitcoincmd}bob getblockcount)" ]; do :; done
+# Now we wait for bob's balance to increase
+echo Waiting for confirmation
+while [ "$balance" = "$(${bitcoincmd}bob getbalance)" ]; do :; done
 balance="$(${bitcoincmd}bob getbalance)"
-blocks="$(${bitcoincmd}bob getblockcount)"
-echo "bob has $balance in block $blocks"
+echo "Block $(${bitcoincmd}bob getblockcount) and bob has $balance"
 
-clean
 exit 0
