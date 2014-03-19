@@ -6,16 +6,14 @@ clean () {
     ${bitcoincmd}alice stop
     ${bitcoincmd}bob stop
 }
-trap clean EXIT
-
-pgrep -f "bitcoincmd" &&
-echo 'found something that looks like a running bitcoin client, not taking any chances' &&
-exit 1
-
-# Run bitcoin RPC server and wait for it
+#trap clean EXIT
+#
+#pgrep -f "bitcoin" &&
+#echo 'found something that looks like a running bitcoin client, not taking any chances' &&
+#exit 1
+#
 ${bitcoincmd}alice
 ${bitcoincmd}bob
-
 exec 6>&1 7>&2 1>/dev/null 2>/dev/null
 while :; do
     ${bitcoincmd}alice getinfo && ${bitcoincmd}bob getinfo && break
@@ -58,16 +56,6 @@ getval() {
     fi
 }
 
-# Wait for the nodes to update
-curblk="$(curl http://blockexplorer.com/testnet/q/getblockcount 2>/dev/null )"
-while :; do
-    ablk="$(getval nojson alice getblockcount)"
-    bblk="$(getval nojson bob getblockcount)"
-    [ "$curblk" = "$ablk" ] && [ "$curblk" = "$bblk" ] && break
-    echo "alice is on $ablk and bob is on $bblk out of $curblk"
-    sleep 5
-done
-
 # Get alice's details: address, pubkey, privkey and an unspent transaction
 aaddr="$(getval alice getaddressesbyaccount)"
 apriv="$(getval nojson alice dumpprivkey $aaddr)"
@@ -85,31 +73,26 @@ bpubk="$(getval bob "validateaddress $baddr" pubkey)"
 sig="[\"$apubk\",\"$bpubk\"]"
 addr="$(getval alice "createmultisig 2 $sig" address)"
 txin="[{\"txid\": \"$aintx\", \"vout\": 0}]"
-txout="{\"$addr\": 0.00011}"
+txout="{\"$addr\": 49}"
 dang="$(getval nojson alice createrawtransaction "$txin" "$txout")"
 dang="$(getval alice "signrawtransaction $dang" hex)"
-
-echo "$dang"
 
 # And, for starters, a transaction that sends the danglage to bob
 redeem="$(getval alice "createmultisig 2 $sig" redeemScript)"
 pubk="$(getval last alice "decoderawtransaction $dang" hex)"
 txin="$(getval alice "decoderawtransaction $dang" txid)"
 txin="[{\"txid\":\"$txin\",\"vout\":0,\"scriptPubKey\":\"$pubk\",\"redeemScript\":\"$redeem\"}]"
-txout="{\"$baddr\":0.0001}"
+txout="{\"$baddr\":48}"
 cashout="$(getval nojson alice createrawtransaction "$txin" "$txout")"
-
-echo "1 $cashout"
+echo so far
 
 # alice signs with her key
 key="[\"$apriv\"]"
 cashout="$(getval alice "signrawtransaction $cashout $txin $key" hex)"
-echo "2 $cashout"
 
 # and bob signs with his
 key="[\"$bpriv\"]"
 cashout="$(getval bob "signrawtransaction $cashout $txin $key" hex)"
-echo "3 $cashout"
 
 # bob checks his balance
 balance="$(getval nojson bob getbalance)"
