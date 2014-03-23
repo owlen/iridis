@@ -1,6 +1,6 @@
 #!/bin/bash
 
-bitcoincmd="bitcoind --datadir=$1"
+bitcoincmd="bitcoind"
 
 exec 6>&1 7>&2 1>/dev/null 2>/dev/null
 if ! $bitcoincmd getinfo; then

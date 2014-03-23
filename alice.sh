@@ -1,31 +1,49 @@
 #!/bin/bash
 
+# New keypair, generated for edith, never imported anywhere
+exeprvk=5J8dXFAxgE5zeT9oHjyDkVPu7gma6HU4iEbvE8egYhnZqyShdHi
+exepubk=0418e40a83902f2eca2ea20ef1917326bad0887bd61b121f110c4f1cda55591f16748498a92cceca03c9264b6d25d7762d4a6419aa342b6d4709c97370013e44bd
+exeaddr=16Q4edCeqQ6xi116ntuw5EVbtkbAm4UMRv
+
+
+
+
+clrprvk=93JNn11rTDS98h942XH5kAPCazBTePm6Ex4bfSQKZatR8uYd5yL
+clrpubk=044d58335abdd1ddffae6cf6287e526fca43f414284e8da7bf96714d5a50100aeaef51618741f0ad16fc872e9d890bf48d11c2093cc71fd50afb8471ef6f0dc27a
+clraddr=miK8P39kePAQVXfrm12PkCusvqsu49VBuu
+
+btcprvk=9335ad9S8gwVadH7jjkahP5ChH7ukevxKG9EDW27gr2Hq2aXcVC
+btcpubk=04b337154cbe51ca34f816898ff1b472d70f2fbd3a6f8418adc9cdd7485a75c1df338af40883a9268d1eed87c4ef4f0017bd5c566c9f22f9bc6dde34a2911e96fd
+btcaddr=miHAzgUWtaypUMtA7cbV1QUoT7rPu2XXLH
+
 source init.sh alice
 
 # Colored input
 clrin='{"txid": "944c8f9d406e4237435411a8058394cee24d0bf6f17465ded3e43ead7280ac31", "vout": 0, "scriptPubKey" : "76a9141eabce1c4d99df2eb5a0a56c57f36d08e9250a9a88ac"}'
 
+echo $dang
+exit 3
+prvAclr='["93JNn11rTDS98h942XH5kAPCazBTePm6Ex4bfSQKZatR8uYd5yL"]'
+prvAbtc='["9335ad9S8gwVadH7jjkahP5ChH7ukevxKG9EDW27gr2Hq2aXcVC"]'
 # Uncolored input (for fee)
 btcin='{"txid": "944c8f9d406e4237435411a8058394cee24d0bf6f17465ded3e43ead7280ac31", "vout": 1, "scriptPubKey" : "76a9141e4d27dc6311f1ae9f0d758d15bf820d7c6bc0a488ac"}'
 
 # Create multisig address from two pubkeys
-pubAclr=044d58335abdd1ddffae6cf6287e526fca43f414284e8da7bf96714d5a50100aeaef51618741f0ad16fc872e9d890bf48d11c2093cc71fd50afb8471ef6f0dc27a
-pubEall=02181af67ac9c37284f995f37a19c0b2236f5ce4e099ce188951791e853c170648
-msig='["'$pubAclr'", "'$pubEall'"]'
+msig='["'$clrpubk'", "'$exepubk'"]'
 msig="$($bitcoincmd createmultisig 2 "$msig")"
 msaddr="$(echo "$msig" | grep -Pom1 "(?<=\"address\" : \")[^\"]*")"
 redeem="$(echo "$msig" | grep -Pom1 "(?<=\"redeemScript\" : \")[^\"]*")"
 
 # Colored output first, then change
-txout='{"'$msaddr'": 0.000001, "miHAzgUWtaypUMtA7cbV1QUoT7rPu2XXLH": 0.099898}'
+txout='{"'$msaddr'": 0.000001, "$btcaddr": 0.099898}'
 
 # Create danglage
 dang="$($bitcoincmd createrawtransaction "[$clrin, $btcin]" "$txout")"
 
 # Sign it
-prvAclr='["93JNn11rTDS98h942XH5kAPCazBTePm6Ex4bfSQKZatR8uYd5yL"]'
-prvAbtc='["9335ad9S8gwVadH7jjkahP5ChH7ukevxKG9EDW27gr2Hq2aXcVC"]'
-dang="$($bitcoincmd signrawtransaction "$dang" "[$clrin, $btcin]" "$prvAclr" | grep -Pom1 "(?<=\"hex\" : \")[^\"]*")"
+dang="$($bitcoincmd signrawtransaction "$dang" "[$clrin, $btcin]" "[\"$prvAclr\"]" | grep -Pom1 "(?<=\"hex\" : \")[^\"]*")"
+echo $dang
+exit 3
 $bitcoincmd signrawtransaction "$dang" "[$clrin, $btcin]" "$prvAbtc"
 dang="$($bitcoincmd signrawtransaction "$dang" "[$clrin, $btcin]" "$prvAbtc" | grep -Pom1 "(?<=\"hex\" : \")[^\"]*")"
 
