@@ -19,16 +19,13 @@ def makefilter(offeredInputs, quantityOffered, requestedAsset, Price, kyc, commi
 
 try:
     while True:
-        cmd = input("\nType command ([P]ropose, [O]ffer, [I]nbox, [Q]uit)\n")
+        cmd = input("\nType command ([S]end, [R]eceive, [Q]uit)\n")
         if 'q' == cmd.lower(): break
-        if 'i' == cmd.lower():
-            print(msgserver.listen(''))
+        if 's' == cmd.lower():
+            print(msgserver.send(input('subject: '), input('message: ')))
             continue
-        if 'o' == cmd.lower():
-            print(msgserver.offer(input("\noffer\n")))
-            continue
-        if 'p' == cmd.lower():
-            print(msgserver.propose(input("\npropose\n")))
+        if 'r' == cmd.lower():
+            print(msgserver.receive())
             continue
 except KeyboardInterrupt:
     from sys import exit

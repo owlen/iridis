@@ -37,7 +37,7 @@ from xmlrpc.server import SimpleXMLRPCRequestHandler
 server = SimpleXMLRPCServer(("127.0.0.1", 6712), requestHandler=SimpleXMLRPCRequestHandler)
 server.register_introspection_functions()
 
-server.register_function(propose, 'send')
+server.register_function(send, 'send')
 server.register_function(receive, 'receive')
 
 try:
