@@ -10,9 +10,10 @@ Framework for decentralized conversion of colored coins.
 
 ## messages.py ##
 
-- listen(filter) -> list of matching propositions, list of matching offers
-- propose(filter) -> success of broadcasting proposition to the network
-- offer(tx) -> success of broadcasting offer to the network
+Currently implemented over bitmessage, which means I need to patch the function lookupAppdataFolder in shared.py to support multiple users on the same computer.
+
+- send(message) -> success of broadcasting message to the network
+- receive() -> list of new messages
 
 ## trader.py ##
 

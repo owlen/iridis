@@ -10,7 +10,7 @@ from base64 import b64encode, b64decode
 def b64enc(s): return b64encode(bytes(s, 'utf-8')).decode('utf-8')
 def b64dec(b): return b64decode(b).decode('utf-8')
 
-# Propose and offer are just wrappers of send
+# Send message to chan
 from json import dumps as jsdumps
 toaddress = '2cUEpXgRYZAmVqqWd8tzAFLr8UXtCbZy4g'
 fromaddress = '2cW9hFSVrVs2AcqwKgkcx6QtL6fgXNa4AP'
@@ -18,12 +18,10 @@ def send(subject, message):
     if not type(message) is str: message = jsdumps(message)
     subject, message = map(b64enc, (subject, message))
     return bitmessage.sendMessage(toaddress, fromaddress, subject, message)
-def propose(filter): return send('proposition', filter)
-def offer(tx): return send('offer', tx)
 
 # Get a list of all new messages
 from json import loads as jsloads
-def listen(filter):
+def receive():
     messages = []
     inbox = jsloads(bitmessage.getAllInboxMessages())['inboxMessages']
     for msgid in (m['msgid'] for m in inbox):
@@ -39,9 +37,8 @@ from xmlrpc.server import SimpleXMLRPCRequestHandler
 server = SimpleXMLRPCServer(("127.0.0.1", 6712), requestHandler=SimpleXMLRPCRequestHandler)
 server.register_introspection_functions()
 
-server.register_function(propose, 'propose')
-server.register_function(offer, 'offer')
-server.register_function(listen, 'listen')
+server.register_function(propose, 'send')
+server.register_function(receive, 'receive')
 
 try:
     server.serve_forever()

@@ -1,0 +1,71 @@
+[bitmessagesettings]
+settingsversion = 8
+port = 8444
+timeformat = %%a, %%d %%b %%Y  %%I:%%M %%p
+blackwhitelist = black
+startonlogon = false
+minimizetotray = false
+showtraynotifications = true
+startintray = false
+socksproxytype = none
+sockshostname = localhost
+socksport = 9050
+socksauthentication = false
+sockslisten = false
+socksusername = 
+sockspassword = 
+keysencrypted = false
+messagesencrypted = false
+defaultnoncetrialsperbyte = 640
+defaultpayloadlengthextrabytes = 14000
+minimizeonclose = false
+maxacceptablenoncetrialsperbyte = 0
+maxacceptablepayloadlengthextrabytes = 0
+userlocale = system
+useidenticons = True
+identiconsuffix = 5ADYEJfwYuaF
+stopresendingafterxdays = 
+stopresendingafterxmonths = 
+namecoinrpctype = namecoind
+namecoinrpchost = localhost
+namecoinrpcuser = 
+namecoinrpcpassword = 
+namecoinrpcport = 8336
+sendoutgoingconnections = True
+apienabled = true
+apiport = 7713
+apiinterface = 127.0.0.1
+apiusername = admin
+apipassword = 123
+daemon = True
+
+[BM-2cXu2HvMCWfuBQYjhcwx175WQy1LkEhyxC]
+label = stam
+enabled = true
+decoy = false
+noncetrialsperbyte = 640
+payloadlengthextrabytes = 14000
+privsigningkey = 5JtbVmKbVg27LthotWUmqMyUT8VFp6yxhxoGRBFDPBZVvhBDPRY
+privencryptionkey = 5KiNtQY8nKsCKsZ9c3pWf8SyoRR2NcYjsquMZJPAQ1aN77tSoz6
+lastpubkeysendtime = 1396434941
+
+[BM-2cW9hFSVrVs2AcqwKgkcx6QtL6fgXNa4AP]
+label = blam
+enabled = true
+decoy = false
+noncetrialsperbyte = 640
+payloadlengthextrabytes = 14000
+privsigningkey = 5KYq89Ny592hUz6nMVEPNnRJ31YAoxY7yuuJHr84UdQxfCrSFLT
+privencryptionkey = 5K1o4Mnea9pynjF9ChseMvDUrNaz3w3NcWdUV7uNyWqePRRJUTs
+lastpubkeysendtime = 1396434992
+
+[BM-2cUEpXgRYZAmVqqWd8tzAFLr8UXtCbZy4g]
+label = [chan] ematadoro
+enabled = true
+decoy = false
+chan = true
+noncetrialsperbyte = 640
+payloadlengthextrabytes = 14000
+privsigningkey = 5KCheHbqmBN28FrcXzMGgaatz1bUmDZ1CZ8dQc2PxDkPr4oyR5u
+privencryptionkey = 5JU4CpRUHfczj5QoPe9GbzVz4UKCTRGSLXnm6aSz2awQiW9zmXp
+

@@ -7,6 +7,16 @@ print("Connected to message server with functions: %s" % (', '.join(msgserver.sy
 #print(colorserver.getvoutcolor('1'))
 #print(colorserver.system.listMethods())
 
+def makefilter(offeredInputs, quantityOffered, requestedAsset, Price, kyc, commitment):
+    return {
+        'offeredInputs': input('space separated list of [txhash:index] entries: '),
+        'quantityOffered': input('quantity offered: '),
+        'requestedAsset': input('requested asset: '),
+        'price': input('price: '),
+        'kyc': input('kyc: '),
+        'commitment': ''
+    }
+
 try:
     while True:
         cmd = input("\nType command ([P]ropose, [O]ffer, [I]nbox, [Q]uit)\n")
