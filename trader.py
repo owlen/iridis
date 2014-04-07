@@ -1,13 +1,9 @@
 #!/usr/bin/python3
-import xmlrpc.client
-msgserver = xmlrpc.client.ServerProxy('http://127.0.0.1:6712')
-print("Connected to message server with functions: %s" % (', '.join(msgserver.system.listMethods())))
+import jsonrpclib
+msgserver = jsonrpclib.Server('http://127.0.0.1:6712')
+#colorserver = jsonrpclib.Server('http://127.0.0.1:6711')
 
-#colorserver = xmlrpc.client.ServerProxy('http://127.0.0.1:6711')
-#print(colorserver.getvoutcolor('1'))
-#print(colorserver.system.listMethods())
-
-def makefilter(offeredInputs, quantityOffered, requestedAsset, Price, kyc, commitment):
+def makefilter():
     return {
         'offeredInputs': input('space separated list of [txhash:index] entries: '),
         'quantityOffered': input('quantity offered: '),

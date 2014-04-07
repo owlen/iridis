@@ -32,14 +32,12 @@ def receive():
     return messages
 
 # Serve RPC
-from xmlrpc.server import SimpleXMLRPCServer
-from xmlrpc.server import SimpleXMLRPCRequestHandler
-server = SimpleXMLRPCServer(("127.0.0.1", 6712), requestHandler=SimpleXMLRPCRequestHandler)
+from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer
+server = SimpleJSONRPCServer(('127.0.0.1', 6712))
 server.register_introspection_functions()
-
 server.register_function(send, 'send')
 server.register_function(receive, 'receive')
-
+print('Serving JSON on 6712')
 try:
     server.serve_forever()
 except KeyboardInterrupt:
