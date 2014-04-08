@@ -14,10 +14,10 @@ def b64dec(b): return b64decode(b).decode('utf-8')
 from json import dumps as jsdumps
 toaddress = '2cUEpXgRYZAmVqqWd8tzAFLr8UXtCbZy4g'
 fromaddress = '2cW9hFSVrVs2AcqwKgkcx6QtL6fgXNa4AP'
-def send(subject, message):
-    if not type(message) is str: message = jsdumps(message)
-    subject, message = map(b64enc, (subject, message))
-    return bitmessage.sendMessage(toaddress, fromaddress, subject, message)
+def send(subject, body):
+    if not type(body) is str: body = jsdumps(body)
+    subject, body = map(b64enc, (subject, body))
+    return bitmessage.sendMessage(toaddress, fromaddress, subject, body)
 
 # Get a list of all new messages
 from json import loads as jsloads
@@ -26,9 +26,12 @@ def receive():
     inbox = jsloads(bitmessage.getAllInboxMessages())['inboxMessages']
     for msgid in (m['msgid'] for m in inbox):
         message = jsloads(bitmessage.getInboxMessageByID(msgid))['inboxMessage'][0]
-        subject, message = map(b64dec, (message['subject'], message['message']))
-        messages.append({'subject': subject, 'message': message})
+        if 'BM-' + toaddress == message['toAddress']:
+            fromaddress = message['fromAddress']
+            subject, body = map(b64dec, (message['subject'], message['message']))
+            messages.append({'subject': subject, 'body': jsloads(body), 'fromaddress': fromaddress})
         bitmessage.trashMessage(msgid)
+    if len(messages) > 0: print('transfered incoming messages: ', messages)
     return messages
 
 # Serve RPC
