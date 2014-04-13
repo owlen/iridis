@@ -29,7 +29,9 @@ def receive():
         if 'BM-' + toaddress == message['toAddress']:
             fromaddress = message['fromAddress']
             subject, body = map(b64dec, (message['subject'], message['message']))
-            messages.append({'subject': subject, 'body': jsloads(body), 'fromaddress': fromaddress})
+            try: body = jsloads(body)
+            except ValueError: pass
+            messages.append({'subject': subject, 'body': body, 'fromaddress': fromaddress})
         bitmessage.trashMessage(msgid)
     if len(messages) > 0: print('transfered incoming messages: ', messages)
     return messages
