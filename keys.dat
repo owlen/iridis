@@ -33,24 +33,14 @@ namecoinrpcpassword =
 namecoinrpcport = 8336
 sendoutgoingconnections = True
 apienabled = true
-apiport = 7713
+apiport = 6713
 apiinterface = 127.0.0.1
 apiusername = admin
 apipassword = 123
 daemon = True
 
-[BM-2cXu2HvMCWfuBQYjhcwx175WQy1LkEhyxC]
-label = stam
-enabled = true
-decoy = false
-noncetrialsperbyte = 640
-payloadlengthextrabytes = 14000
-privsigningkey = 5JtbVmKbVg27LthotWUmqMyUT8VFp6yxhxoGRBFDPBZVvhBDPRY
-privencryptionkey = 5KiNtQY8nKsCKsZ9c3pWf8SyoRR2NcYjsquMZJPAQ1aN77tSoz6
-lastpubkeysendtime = 1396434941
-
 [BM-2cW9hFSVrVs2AcqwKgkcx6QtL6fgXNa4AP]
-label = blam
+label = test
 enabled = true
 decoy = false
 noncetrialsperbyte = 640
