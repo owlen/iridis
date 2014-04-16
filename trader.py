@@ -3,6 +3,80 @@
 import jsonrpclib
 colorserver = jsonrpclib.Server('http://127.0.0.1:6711')
 print('Connected to color server with no introspection')
+
+red = 'obc:8a78b017ea9d97ca7d1044fc9b3bc40356518a9fe68a4466197c0f22d2e29e82:0:209609'
+blue = 'obc:6beaf35c6b4fbb8dfa0c4a1483e90ecd06d2ecbd4a05b2dbe92a480acd4ad2fe:0:209610'
+aliceunspentred = [['8a78b017ea9d97ca7d1044fc9b3bc40356518a9fe68a4466197c0f22d2e29e82', 0], ['8a78b017ea9d97ca7d1044fc9b3bc40356518a9fe68a4466197c0f22d2e29e82', 1]]
+bobunspentblue = [['6beaf35c6b4fbb8dfa0c4a1483e90ecd06d2ecbd4a05b2dbe92a480acd4ad2fe', 0]]
+aliceblueaddress = '6ZNFj4EMrvWHCD@mrSU1wpXhpZHcj7kfyzuSkzBHqhgRCD3vx'
+bobredaddress = '9Xs9thPERNq2Yw@mvppS4uMXqpq46W5jFPXpPcXLrtNmEG2zJ'
+
+print(
+    {
+        'inputs': {
+            red: aliceunspentred,
+            blue: bobunspentblue
+        },
+        'targets': [
+            [
+                aliceblueaddress,
+                blue,
+                1
+            ], [
+                bobredaddress,
+                red,
+                10
+            ]
+        ]
+    },
+    {
+        'color_spec': red,
+        'value': 10
+    },
+    {
+        'color_spec': blue,
+        'value': 1
+    }
+)
+
+
+tx = colorserver.makeconversion(
+    {
+        'inputs': {
+            red: aliceunspentred,
+            blue: bobunspentblue
+        },
+        'targets': [
+            [
+                aliceblueaddress,
+                blue,
+                1
+            ], [
+                bobredaddress,
+                red,
+                10
+            ]
+        ]
+    },
+    {
+        'color_spec': red,
+        'value': 10
+    },
+    {
+        'color_spec': blue,
+        'value': 1
+    }
+)
+
+lamapo
+
+print('Bob got proposal and sent a fulfil: ', msgserver.send('fulfil', tx))
+
+
+
+
+
+
 msgserver = jsonrpclib.Server('http://127.0.0.1:6712')
 print("Connected to message server with functions: %s" % (', '.join(msgserver.system.listMethods())))
 
