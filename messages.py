@@ -32,7 +32,7 @@ def receive():
             try: body = jsloads(body)
             except ValueError: pass
             messages.append({'subject': subject, 'body': body, 'fromaddress': fromaddress})
-        bitmessage.trashMessage(msgid)
+        #bitmessage.trashMessage(msgid)
     if len(messages) > 0: print('transfered incoming messages: ', messages)
     return messages
 

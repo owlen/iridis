@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
-def getoutputvalue(output):
-    return { 'colorvalue': 1 }
+def getoutputvalue(output, color):
+    return { 'colorvalue': 10 }
 
-def makeconversion(color, amount1, key, outputs, amount2):
+def makeconversion(tx):
     return { 'hex': 'tx' }
 
 from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer
