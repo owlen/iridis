@@ -5,7 +5,7 @@ ColoredCoins implementation.
 
 Framework for a swift and decentralized coloredcoins marketplace.
 
-See https://groups.google.com/d/msg/bitcoinx/o9LYhbomuIE/usOCm2JVWxcJ
+See https://groups.google.com/forum/#!tags/bitcoinx/Iridis
 
 ## Beware, here be pre-alpha code and ideas ##
 
