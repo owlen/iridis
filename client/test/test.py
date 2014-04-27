@@ -30,7 +30,8 @@ print('Alice sent proposal: ', msgserver.send('proposal', {
         'asset': blue,
         'quantity': 1,
         'address': aliceblueaddress
-    }
+    },
+    'scheme': 1
 }))
 
 # And then comes bob, who has blue coins, here is his blue UTXO list:
