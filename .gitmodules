@@ -5,5 +5,5 @@
 	path = color/ngccc/ngcccbase
 	url = http://github.com/israellevin/ngcccbase
 [submodule "client/multibit/multibit"]
-	path = client/multibit/multibit
+	path = trader/multibit/multibit
 	url = https://github.com/rottev/multibit
