@@ -61,11 +61,12 @@ Currently, you will find the following
     - A fork of multibit which implements a simple color scheme (currently integrated with trading clients)
 - Message servers:
     - A thin wrapper over bitmessage
+- Bitcoin servers:
+    - A thin wrapper over bitcoind running with full index (we are working on a bitcoinj version)
 - Trading clients:
     - A python script with hard coded color definitions and UTXO lists that simulates trade - more a testing tool than an actual UI
     - A fork of multibit which implements a simple color scheme (currently integrated with color server)
-
-We do not have anything new in the bitcoin server department, and while we are working on using bitcoinj with the multibit fork, currently our tests use a vanilla bitcoind running with a full index.
+    - A demo Web app for very basic trading
 
 ## What can you do? ##
 
