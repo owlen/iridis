@@ -26,9 +26,12 @@
 var wallet = {
     red: {
         definition: 'epobc:7d8d9b4b46d25893bff2cb04f5642e7645bd63fad8dbc552c9926c80fcaaec48:0:227476',
-
         utxos: [
-            ['7d8d9b4b46d25893bff2cb04f5642e7645bd63fad8dbc552c9926c80fcaaec48', 0]
+            {
+                txid: '7d8d9b4b46d25893bff2cb04f5642e7645bd63fad8dbc552c9926c80fcaaec48',
+                vout: 0,
+                scriptPubKey: '76a91477d01d5e300233dd7a825333c01e9c5fd4edb41388ac'
+            }
         ],
         addresses: [
             'mtvwhPxwXwwzMdSi6keubo5UXHuR6LJtmG'
@@ -40,7 +43,11 @@ var wallet = {
     blue: {
         definition: 'epobc:0c7ce15c9536fcf1e9c948a8ff4fe53d59b33c2785f8c06e58c33225ff992279:0:227476',
         utxos: [
-            ['0c7ce15c9536fcf1e9c948a8ff4fe53d59b33c2785f8c06e58c33225ff992279', 0]
+            {
+                txid: '0c7ce15c9536fcf1e9c948a8ff4fe53d59b33c2785f8c06e58c33225ff992279',
+                vout: 0,
+                scriptPubKey: '76a91493231e95b05bef484d47dfec264e46577958817088ac'
+            }
         ],
         addresses: [
             'mrSU1wpXhpZHcj7kfyzuSkzBHqhgRCD3vx'
@@ -52,7 +59,11 @@ var wallet = {
     redobc: {
         definition: 'obc:dcbe4e0a19123d5f8933dea209cda6885ef30ce82179107fa8ac002f5e6a0490:0:227615',
         utxos: [
-            ['dcbe4e0a19123d5f8933dea209cda6885ef30ce82179107fa8ac002f5e6a0490', 0]
+            {
+                txid: 'dcbe4e0a19123d5f8933dea209cda6885ef30ce82179107fa8ac002f5e6a0490',
+                vout: 0,
+                scriptPubKey: '76a9149d32a8e72cb6b677918bf069652c64a62acc89b988ac'
+            }
         ],
         addresses: [
             'mur955GgALPjoPfL4MDESkMmDWNZefwFBT'
@@ -64,7 +75,11 @@ var wallet = {
     blueobc: {
         definition: 'obc:c58ed5f0cbd59088641bd348db0b0e26035642af811fd74f797dec88268ee587:0:227615',
         utxos: [
-            ['c58ed5f0cbd59088641bd348db0b0e26035642af811fd74f797dec88268ee587', 0]
+            {
+                txid: 'c58ed5f0cbd59088641bd348db0b0e26035642af811fd74f797dec88268ee587',
+                vout: 0,
+                scriptPubKey: '76a914373b2329ab39cc44c0099eaa0e6eecbb0a8ba19788ac'
+            }
         ],
         addresses: [
             'mkYzJYHEJc6WmPuFiGFThGJGGqSBnv2B3Q'
@@ -132,7 +147,7 @@ function scancolor(color, callback){
     color.value = 0;
     $.each(color.utxos, function(i, utxo){
         color.checking++;
-        RPC('colorvalue', [color.definition, utxo], function(value){
+        RPC('colorvalue', [color.definition, [utxo.txid, utxo.vout]], function(value){
             color.value += value;
             if(0 === --color.checking) callback(color);
         });
@@ -148,13 +163,17 @@ function scanwallet(colors){
     });
 }
 
+function txotolist(txo){
+    return [txo.txid, txo.vout];
+}
+
 function fulfilproposal(proposal){
     $('<button>').text('Bob: fulfil proposal').click(function(e){
         $(e.target).remove();
         proposal.spec = {};
         proposal.spec.inputs = {};
-        proposal.spec.inputs[proposal.give.definition] =  proposal.give.utxos;
-        proposal.spec.inputs[wallet.blueobc.definition] =  wallet.blueobc.utxos;
+        proposal.spec.inputs[proposal.give.definition] = [$.map(proposal.give.utxos, txotolist)];
+        proposal.spec.inputs[wallet.blueobc.definition] = [$.map(wallet.blueobc.utxos, txotolist)];
         proposal.spec.targets = [
             [
                 proposal.take.address,
@@ -169,12 +188,11 @@ function fulfilproposal(proposal){
         RPC('makeconversion', [proposal.spec], function(hex){
             var inputs = []
             $.each(wallet.blueobc.utxos, function(i, utxo){
-                RPC('getscriptpubkey', [utxo], function(scrpubk){
-                    inputs.push({'txid': utxo[0], 'vout': utxo[1], 'scriptPubKey': scrpubk})
-                    RPC('signrawtransaction', [hex, inputs, wallet.blueobc.prvkeys], function(hex){
-                        RPC('send', ['fulfil', hex.hex], function(){ log('Fulfil sent'); });
-                    });
-                });
+                inputs.push({'txid': utxo.txid, 'vout': utxo.vout, 'scriptPubKey': utxo.scriptPubKey})
+            });
+            RPC('signrawtransaction', [hex, inputs, wallet.blueobc.prvkeys], function(hex){
+                log(hex);
+                RPC('send', ['fulfil', hex.hex], function(){ log('Fulfil sent'); });
             });
         });
     }).appendTo($('#content'));
@@ -202,12 +220,10 @@ function getmessages(){
             }else if('fulfil' === message.subject){
                 var inputs = []
                 $.each(wallet.redobc.utxos, function(i, utxo){
-                    RPC('getscriptpubkey', [utxo], function(scrpubk){
-                        inputs.push({'txid': utxo[0], 'vout': utxo[1], 'scriptPubKey': scrpubk})
-                        RPC('signrawtransaction', [message.body, inputs, wallet.redobc.prvkeys], function(hex){
-                            log(hex);
-                        });
-                    });
+                    inputs.push({'txid': utxo.txid, 'vout': utxo.vout, 'scriptPubKey': utxo.scriptPubKey})
+                });
+                RPC('signrawtransaction', [message.body, inputs, wallet.redobc.prvkeys], function(hex){
+                    log(hex);
                 });
             }
             log('received: ' + message.subject, message);
