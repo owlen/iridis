@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+        <meta charset="utf-8">
+        <title>Iridis Trader</title>
+        <meta name="description" content="Iridis trading Web app">
+        <style>
+            #nojs{
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                width: 100%;
+                background: yellow;
+                color: red;
+            }
+            #log{
+                width: 100%;
+                background: yellow;
+                color: black;
+            }
+        </style>
+        <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+        <script type="text/javascript">
+
+var wallet = {
+    red: {
+        definition: 'epobc:7d8d9b4b46d25893bff2cb04f5642e7645bd63fad8dbc552c9926c80fcaaec48:0:227476',
+
+        utxos: [
+            ['7d8d9b4b46d25893bff2cb04f5642e7645bd63fad8dbc552c9926c80fcaaec48', 0]
+        ],
+        addresses: [
+            'mtvwhPxwXwwzMdSi6keubo5UXHuR6LJtmG'
+        ],
+        prvkeys: [
+            '93Hr5v7yk7e8KJvyhPnLhAEiotaczmVjn4SC212bTJL6im7xK4s'
+        ]
+    },
+    blue: {
+        definition: 'epobc:0c7ce15c9536fcf1e9c948a8ff4fe53d59b33c2785f8c06e58c33225ff992279:0:227476',
+        utxos: [
+            ['0c7ce15c9536fcf1e9c948a8ff4fe53d59b33c2785f8c06e58c33225ff992279', 0]
+        ],
+        addresses: [
+            'mrSU1wpXhpZHcj7kfyzuSkzBHqhgRCD3vx'
+        ],
+        prvkeys: [
+            '93NgLRXNYohxTM5z7Ug3wiAqHDLRC7LDLPWmzqkqpzfVRu7Gcbj'
+        ]
+    },
+    redobc: {
+        definition: 'obc:dcbe4e0a19123d5f8933dea209cda6885ef30ce82179107fa8ac002f5e6a0490:0:227615',
+        utxos: [
+            ['dcbe4e0a19123d5f8933dea209cda6885ef30ce82179107fa8ac002f5e6a0490', 0]
+        ],
+        addresses: [
+            'mur955GgALPjoPfL4MDESkMmDWNZefwFBT'
+        ],
+        prvkeys: [
+            '928eYgrJ5obtLBz1VHhw2BSZTQgaBHC788KfqzudfYuBgUEL4Uh'
+        ]
+    },
+    blueobc: {
+        definition: 'obc:c58ed5f0cbd59088641bd348db0b0e26035642af811fd74f797dec88268ee587:0:227615',
+        utxos: [
+            ['c58ed5f0cbd59088641bd348db0b0e26035642af811fd74f797dec88268ee587', 0]
+        ],
+        addresses: [
+            'mkYzJYHEJc6WmPuFiGFThGJGGqSBnv2B3Q'
+        ],
+        prvkeys: [
+            '92Mho9s6y65gHFKXZWwexrsqY1gHbEJ4FAJ9UVHF2dvdZjz6o6j'
+        ]
+    },
+};
+
+var filter = {
+    'give': {
+        'definition': wallet.redobc.definition,
+        'quantity': 10,
+        'utxos': wallet.redobc.utxos
+    },
+    'take': {
+        'definition': wallet.blueobc.definition,
+        'quantity': 1,
+        'address': wallet.blueobc.addresses[0]
+    }
+};
+
+var otherfilter = {
+    'give': {
+        'definition': wallet.blueobc.definition,
+        'quantity': 1,
+        'utxos': wallet.blueobc.utxos
+    },
+    'take': {
+        'definition': wallet.redobc.definition,
+        'quantity': 10,
+        'address': wallet.redobc.addresses[0]
+    }
+};
+
+function log(msg){
+    console.log(arguments);
+    if('string' === typeof msg) $('#log').prepend($('<div>').text(msg));
+};
+
+function RPC(methodname, params, callback){
+    $.ajax({
+        url: 'http://127.0.0.1:6710',
+        type: 'POST',
+        contenType: 'application/json',
+        dataType: 'json',
+        data: JSON.stringify({
+            'jsonrpc': '2.0',
+            'method': methodname,
+            'params': params,
+            'id': 1
+        }),
+        success: function(response){
+            if('undefined' !== typeof response.error) return log('RPC error' + response.error.message, response);
+            callback(response.result);
+        },
+        error: log
+    });
+}
+
+function scancolor(color, callback){
+    if('number' !== typeof(color.checking)) color.checking = 0;
+    else if(0 < color.checking) return false;
+    color.value = 0;
+    $.each(color.utxos, function(i, utxo){
+        color.checking++;
+        RPC('colorvalue', [color.definition, utxo], function(value){
+            color.value += value;
+            if(0 === --color.checking) callback(color);
+        });
+    });
+}
+
+function scanwallet(colors){
+    $.each(colors, function(colorname, color){
+        color.name = colorname;
+        scancolor(color, function(color){
+            if(0 === color.checking) log('you have ' + color.value + ' ' + color.name);
+        });
+    });
+}
+
+function fulfilproposal(proposal){
+    $('<button>').text('Bob: fulfil proposal').click(function(e){
+        $(e.target).remove();
+        proposal.spec = {};
+        proposal.spec.inputs = {};
+        proposal.spec.inputs[proposal.give.definition] =  proposal.give.utxos;
+        proposal.spec.inputs[wallet.blueobc.definition] =  wallet.blueobc.utxos;
+        proposal.spec.targets = [
+            [
+                proposal.take.address,
+                proposal.take.definition,
+                proposal.take.quantity
+            ], [
+                wallet.redobc.addresses[0],
+                wallet.redobc.definition,
+                10
+            ]
+        ];
+        RPC('makeconversion', [proposal.spec], function(hex){
+            var inputs = []
+            $.each(wallet.blueobc.utxos, function(i, utxo){
+                RPC('getscriptpubkey', [utxo], function(scrpubk){
+                    inputs.push({'txid': utxo[0], 'vout': utxo[1], 'scriptPubKey': scrpubk})
+                    RPC('signrawtransaction', [hex, inputs, wallet.blueobc.prvkeys], function(hex){
+                        RPC('send', ['fulfil', hex.hex], function(){ log('Fulfil sent'); });
+                    });
+                });
+            });
+        });
+    }).appendTo($('#content'));
+}
+
+function filterproposal(filter, proposal){
+    if(filter.give.definition !== proposal.take.definition) return false;
+    if(filter.take.definition !== proposal.give.definition) return false;
+    if(
+        filter.give.quantity / filter.take.quantity <
+        proposal.take.quantity / proposal.give.quantity
+    ) return false;
+
+    scancolor(proposal.give, function(color){
+        if(proposal.give.quantity > color.value) return false;
+        fulfilproposal(proposal);
+    });
+}
+
+function getmessages(){
+    RPC('receive', [], function(messages){
+        $.each(messages, function(i, message){
+            if('proposal' === message.subject){
+                filterproposal(otherfilter, message.body);
+            }else if('fulfil' === message.subject){
+                var inputs = []
+                $.each(wallet.redobc.utxos, function(i, utxo){
+                    RPC('getscriptpubkey', [utxo], function(scrpubk){
+                        inputs.push({'txid': utxo[0], 'vout': utxo[1], 'scriptPubKey': scrpubk})
+                        RPC('signrawtransaction', [message.body, inputs, wallet.redobc.prvkeys], function(hex){
+                            log(hex);
+                        });
+                    });
+                });
+            }
+            log('received: ' + message.subject, message);
+        });
+        setTimeout('getmessages()', 1000);
+    });
+}
+
+$(function(){
+    $('#nojs').remove();
+    log('js detected');
+    scanwallet(wallet);
+    getmessages();
+    $('<button>').text('Alice: send proposal').click(function(){
+        RPC('send', ['proposal', filter], function(){ log('Proposal sent'); });
+    }).appendTo($('#content'));
+});
+
+        </script>
+    </head>
+    <body>
+        <div id="nojs">Either you have JavaScript disabled, or we have a serious bug.</div>
+        <div id="content"></div>
+        <div id="log"></div>
+    </body>
+</html>
+<!--
+vim: ft=javascript
+-->
