@@ -191,7 +191,7 @@ function fulfilproposal(proposal){
                 inputs.push({'txid': utxo.txid, 'vout': utxo.vout, 'scriptPubKey': utxo.scriptPubKey})
             });
             RPC('signrawtransaction', [hex, inputs, wallet.blueobc.prvkeys], function(hex){
-                log(hex);
+                log(hex.hex, hex);
                 RPC('send', ['fulfil', hex.hex], function(){ log('Fulfil sent'); });
             });
         });
@@ -223,7 +223,7 @@ function getmessages(){
                     inputs.push({'txid': utxo.txid, 'vout': utxo.vout, 'scriptPubKey': utxo.scriptPubKey})
                 });
                 RPC('signrawtransaction', [message.body, inputs, wallet.redobc.prvkeys], function(hex){
-                    log(hex);
+                    log(hex.hex, hex);
                 });
             }
             log('received: ' + message.subject, message);

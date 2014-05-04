@@ -2,14 +2,29 @@
 
 # This module takes all the services required for colored trading and unites
 # them under one API, as a JSON-RPC server that can be accessed from a browser.
-if __name__ == '__main__':
 
-    # Get the actual functionality
-    import colorfunctions, messagefunctions, bitcoinfunctions
+# Since we are going to run some processes, let's make sure we exit cleanly
+from atexit import register
+def close():
+    print("\nshutting down")
+    color.close()
+    message.close()
+    bitcoin.close()
+register(close)
+
+# Then we can import the actual functionality
+import color, message, bitcoin
+
+# And run a server that exposes it
+if __name__ == '__main__':
 
     # Create a request handler that will serve OPTION requests and allow any origin
     from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCRequestHandler
+    from http.server import SimpleHTTPRequestHandler
     class Handler(SimpleJSONRPCRequestHandler):
+        def do_GET(self):
+            SimpleHTTPRequestHandler.do_GET(self)
+
         def do_OPTIONS(self):
             self.send_response(200, "ok")
             self.send_header('Access-Control-Allow-Origin', '*')
@@ -20,28 +35,23 @@ if __name__ == '__main__':
 
     # Create server
     from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer
-    address = ('127.0.0.1', 6710)
+    address = ('localhost', 6710)
     server = SimpleJSONRPCServer(address, Handler)
 
     # Register functions
     server.register_introspection_functions()
-    server.register_function(colorfunctions.colorvalue, 'colorvalue')
-    server.register_function(colorfunctions.makeconversion, 'makeconversion')
-    server.register_function(messagefunctions.send, 'send')
-    server.register_function(messagefunctions.receive, 'receive')
-    server.register_function(bitcoinfunctions.getscriptpubkey, 'getscriptpubkey')
-    server.register_function(bitcoinfunctions.signrawtransaction, 'signrawtransaction')
+    server.register_function(color.colorvalue, 'colorvalue')
+    server.register_function(color.makeconversion, 'makeconversion')
+    server.register_function(message.send, 'send')
+    server.register_function(message.receive, 'receive')
+    server.register_function(bitcoin.signrawtransaction, 'signrawtransaction')
 
     # Serve RPC
-    print("Serving JSON on %s:%i" % address)
+    print("Serving JSON on http://%s:%i and HTTP on http://%s:%i ..." % (address + (address[0], 8000)))
     try:
         server.serve_forever()
 
     # Shut down
     except KeyboardInterrupt:
-        print("\nshutting down")
-        colorfunctions.close()
-        messagefunctions.close()
-        bitcoinfunctions.close()
         from sys import exit
         exit(0)
