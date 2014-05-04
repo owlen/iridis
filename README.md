@@ -42,7 +42,6 @@ Here is a list of the components, and the capabilities they should provide.
     - Broadcast messages to the channel
     - Get messages from channel (this might become asynchronous one day, right now we just don't care)
 - Bitcoin server:
-    - Get transaction details
     - Sign transaction
     - Broadcast transaction
 
@@ -56,18 +55,21 @@ The different components, which should be interchangeable, are held in this git 
 
 Currently, you will find the following
 - Color servers:
-    - A fake python color lib for testing
     - A fork of ChromaWallet with a patched ngccc-server
     - A fork of multibit which implements a simple color scheme (currently integrated with trading clients)
 - Message servers:
     - A thin wrapper over bitmessage
 - Bitcoin servers:
-    - A thin wrapper over bitcoind running with full index (we are working on a bitcoinj version)
+    - A thin wrapper over bitcoind (we are working on a bitcoinj version)
 - Trading clients:
     - A python script with hard coded color definitions and UTXO lists that simulates trade - more a testing tool than an actual UI
     - A fork of multibit which implements a simple color scheme (currently integrated with color server)
-    - A demo Web app for very basic trading
+    - A demo web app for very basic trading
 
 ## What can you do? ##
 
-You choose a color server, a message server, a bitcoin server and run them. Then you choose a client and run it too. You will find instructions in the appropriate directories.
+In the current branch, you can simply run trader.py, which includes a small web server, and browse to http://localhost:8000 to run the demo web app.
+
+Just don't forget to ```git submodule update```, which fetches the other projects we require.
+
+You can also check out the testscript branch, which has a test script instead of a web UI, or the multibit branch, which isn't yet well integrated into our framework, so you will need to work harder to run it.
