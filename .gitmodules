@@ -1,9 +1,9 @@
-[submodule "message/bitmessage/PyBitmessage"]
-	path = message/bitmessage/PyBitmessage
+[submodule "message/PyBitmessage"]
+	path = message/PyBitmessage
 	url = https://github.com/Bitmessage/PyBitmessage/
-[submodule "color/ngccc/ngcccbase"]
-	path = color/ngccc/ngcccbase
+[submodule "color/ngcccbase"]
+	path = color/ngcccbase
 	url = http://github.com/israellevin/ngcccbase
-[submodule "client/multibit/multibit"]
-	path = trader/multibit/multibit
+[submodule "multibit/multibit"]
+	path = multibit/multibit
 	url = https://github.com/rottev/multibit

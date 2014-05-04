@@ -1,9 +1,27 @@
 #!/usr/bin/python3
 
-# Connect to bitmessage - user and pass configured with:
-# https://github.com/Dokument/PyBitmessage-Daemon
+# Connect to bitmessage XML-RPC server running with the given keys.dat on port
+# 6713 and expose send and receive functions
+
+# Make sure the port is available
+port = 6713
+import socket
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+if 0 == sock.connect_ex(('localhost', port)):
+    sock.close()
+    raise Exception("port %d is in use, aborting" % (port,))
+
+# Run bitmessage
+from subprocess import Popen, DEVNULL
+from os import path
+curpath = path.dirname(path.abspath(__file__))
+bitmessageprocess = Popen(('python', curpath + '/PyBitmessage/src/bitmessagemain.py'), stdout=DEVNULL)
+
+# Connect to its XML-RPC server
 import xmlrpc.client
-bitmessage = xmlrpc.client.ServerProxy('http://admin:123@127.0.0.1:6713')
+bitmessage = xmlrpc.client.ServerProxy("http://admin:123@127.0.0.1:%d" % (port,))
+
+# Implement required functionality
 
 # UTF-8 to base64 and back
 from base64 import b64encode, b64decode
@@ -36,15 +54,4 @@ def receive():
     if len(messages) > 0: print('transfered incoming messages: ', messages)
     return messages
 
-# Serve RPC
-from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer
-server = SimpleJSONRPCServer(('127.0.0.1', 6712))
-server.register_introspection_functions()
-server.register_function(send, 'send')
-server.register_function(receive, 'receive')
-print('Serving JSON on 6712')
-try:
-    server.serve_forever()
-except KeyboardInterrupt:
-    from sys import exit
-    exit(0)
+def close(): bitmessageprocess.terminate()
