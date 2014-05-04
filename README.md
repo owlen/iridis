@@ -74,4 +74,4 @@ In the current branch, you can simply run trader.py, which includes a small web 
 
 Just don't forget to ```git submodule update```, which fetches the other projects we require.
 
-You can also check out the testscript branch, which has a test script instead of a web UI, or the multibit branch, which isn't yet well integrated into our framework, so you will need to work harder to run it.
+Soon you will be able to check out the testscript branch, which has a test script instead of a web UI, or the multibit branch, which isn't yet well integrated into our framework, so you will need to work harder to run it. Much fun ahead.
