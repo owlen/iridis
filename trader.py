@@ -20,10 +20,7 @@ if __name__ == '__main__':
 
     # Create a request handler that will serve OPTION requests and allow any origin
     from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCRequestHandler
-    from http.server import SimpleHTTPRequestHandler
     class Handler(SimpleJSONRPCRequestHandler):
-        def do_GET(self):
-            SimpleHTTPRequestHandler.do_GET(self)
 
         def do_OPTIONS(self):
             self.send_response(200, "ok")
@@ -45,6 +42,13 @@ if __name__ == '__main__':
     server.register_function(message.send, 'send')
     server.register_function(message.receive, 'receive')
     server.register_function(bitcoin.signrawtransaction, 'signrawtransaction')
+
+    # Spawn web server, and make sure you close it at exit
+    from subprocess import Popen, DEVNULL
+    from os import path
+    curpath = path.dirname(path.abspath(__file__))
+    webserverprocess = Popen(('python3', '-m', 'http.server'), stdout=DEVNULL)
+    register(lambda: webserverprocess.terminate())
 
     # Serve RPC
     print("Serving JSON on http://%s:%i and HTTP on http://%s:%i ..." % (address + (address[0], 8000)))
