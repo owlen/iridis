@@ -72,6 +72,6 @@ Currently, you will find the following
 
 In the current branch, you can simply run trader.py, which includes a small web server, and browse to http://localhost:8000 to run the demo web app.
 
-Just don't forget to ```git submodule update```, which fetches the other projects we require.
+Just don't forget to ```git submodule init``` and then ```git submodule update```, which will fetch the other projects we require.
 
 Soon you will be able to check out the testscript branch, which has a test script instead of a web UI, or the multibit branch, which isn't yet well integrated into our framework, so you will need to work harder to run it. Much fun ahead.

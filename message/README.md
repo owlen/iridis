@@ -8,7 +8,7 @@ The module needs to implement the following two functions:
 
 We are using pyBitmessage in daemon mode as an XML-RPC server.
 
-You need to manually copy the bitmessage config file, keys.dat, to the bitmessage config directory, overriding your current settings. To find out which directory that is, you can run the following command from the current directory (assuming you remembered to ```git submodule update```):
+You need to manually copy the bitmessage config file, keys.dat, to the bitmessage config directory, overriding your current settings. To find out which directory that is, you can run the following command from the current directory:
 
 ```sh
 PYTHONPATH=./PyBitmessage/src/ python -c 'from shared import lookupAppdataFolder as f; print(f());'
