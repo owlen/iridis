@@ -12,10 +12,10 @@ if 0 == sock.connect_ex(('localhost', port)):
     raise Exception("port %d is in use, aborting" % (port,))
 
 # Run bitmessage
-from subprocess import Popen, DEVNULL
+from subprocess import Popen
 from os import path
 curpath = path.dirname(path.abspath(__file__))
-bitmessageprocess = Popen(('python', curpath + '/PyBitmessage/src/bitmessagemain.py'), stdout=DEVNULL)
+bitmessageprocess = Popen(('python', curpath + '/PyBitmessage/src/bitmessagemain.py'))
 
 # Connect to its XML-RPC server
 import xmlrpc.client

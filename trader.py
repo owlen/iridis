@@ -7,13 +7,11 @@
 from atexit import register
 def close():
     print("\nshutting down")
-    color.close()
     message.close()
-    bitcoin.close()
 register(close)
 
 # Then we can import the actual functionality
-import color, message, bitcoin
+import  message
 
 # And run a server that exposes it
 if __name__ == '__main__':
@@ -37,21 +35,11 @@ if __name__ == '__main__':
 
     # Register functions
     server.register_introspection_functions()
-    server.register_function(color.colorvalue, 'colorvalue')
-    server.register_function(color.makeconversion, 'makeconversion')
     server.register_function(message.send, 'send')
     server.register_function(message.receive, 'receive')
-    server.register_function(bitcoin.signrawtransaction, 'signrawtransaction')
-
-    # Spawn web server, and make sure you close it at exit
-    from subprocess import Popen, DEVNULL
-    from os import path
-    curpath = path.dirname(path.abspath(__file__))
-    webserverprocess = Popen(('python3', '-m', 'http.server'), stdout=DEVNULL)
-    register(lambda: webserverprocess.terminate())
 
     # Serve RPC
-    print("Serving JSON on http://%s:%i and HTTP on http://%s:%i ..." % (address + (address[0], 8000)))
+    print("Serving JSON on http://%s:%i ..." % address)
     try:
         server.serve_forever()
 
