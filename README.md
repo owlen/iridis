@@ -70,8 +70,17 @@ Currently, you will find the following
 
 ## What can you do? ##
 
-In the current branch, you can simply run trader.py, which includes a small web server, and browse to http://localhost:8000 to run the demo web app.
+### prerequisits 
+```sh
+sudo apt-get install bitcoind
+sudo pip3 install jsonrpclib-pelix
+```
 
-Just don't forget to ```git submodule init``` and then ```git submodule update```, which will fetch the other projects we require.
+### updated sub modules
+Just don't forget to use ```git submodule init``` once, and than use ```git submodule update``` to fetch the other projects we require.
+
+### running
+In the current branch, you can simply run ```./trader.py```, which includes a small web server, and browse to http://localhost:8000 to run the demo web app.
+This script activates the messaging layer and the coloring library, so make sure you followed the instructions in the readme files in the ```message``` and ```color``` directories.
 
 Soon you will be able to check out the testscript branch, which has a test script instead of a web UI, or the multibit branch, which isn't yet well integrated into our framework, so you will need to work harder to run it. Much fun ahead.

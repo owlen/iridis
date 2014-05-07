@@ -9,7 +9,7 @@ The module needs to implement the following two functions:
 We are using a small patch over Alex's ngccc-server, which implements the required API calls. You can find it here:
 https://github.com/israellevin/ngcccbase
 
-It will be automatically fetched when you fetch the submodules, and you can install it with ```python ./ngcccbase/setup.py```.
+It will be automatically fetched when you fetch the submodules, and you can install it with ```sudo python ./ngcccbase/setup.py install``` (you will need the package ```python-setuptools```). If you haven't done so yet, please go to the project's root and use ```git submodule init``` once, and than use ```git submodule update``` to update it.
 
 The module runs ngccc-server automatically on startup, and implements the close function that shuts it down.
 
