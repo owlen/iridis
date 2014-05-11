@@ -14,16 +14,18 @@ if 0 == sock.connect_ex(('localhost', port)):
     raise Exception("port %d is in use, aborting" % (port,))
 
 # Run ngccc-server
-from subprocess import Popen, DEVNULL
+from subprocess import Popen, PIPE
 from os import path
 curpath = path.dirname(path.abspath(__file__))
-ngcccprocess = Popen(('python', curpath + '/ngcccbase/ngccc-server.py', 'localhost', str(port)), stdout=DEVNULL)
+ngcccprocess = Popen(('python', curpath + '/ngcccbase/ngccc-server.py', 'localhost', str(port)), stdout=PIPE)
 
 # Connect to its JSON-RPC server
 from jsonrpclib import Server
 colorserver = Server("http://127.0.0.1:%d" % (port,))
 
 # Implement required functionality
-def colorvalue(colordef, utxo): return colorserver.colorvalue(colordef, utxo)
+def colorvalue(colordef, txo): return colorserver.colorvalue(colordef, txo)
 def makeconversion(txspec): return colorserver.makeconversion(txspec)
-def close(): ngcccprocess.terminate()
+def close():
+    ngcccprocess.terminate()
+    ngcccprocess.wait()

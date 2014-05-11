@@ -11,10 +11,10 @@ if 0 == sock.connect_ex(('localhost', port)):
     raise Exception("port %d is in use, aborting" % (port,))
 
 # Run bitcoind
-from subprocess import Popen, DEVNULL
+from subprocess import Popen, PIPE
 from os import path
 curpath = path.dirname(path.abspath(__file__))
-bitcoindprocess = Popen(('bitcoind', '-conf=' + curpath + '/bitcoin.conf'), stdout=DEVNULL)
+bitcoindprocess = Popen(('bitcoind', '-conf=' + curpath + '/bitcoin.conf'), stdout=PIPE)
 
 # Connect to its JSON-RPC server
 import jsonrpclib
@@ -29,6 +29,4 @@ def sendrawtransaction(rawtx):
 # Implement required functionality
 def close():
     bitcoind.stop()
-    from time import sleep
-    sleep(3)
-    bitcoindprocess.terminate()
+    bitcoindprocess.wait()
