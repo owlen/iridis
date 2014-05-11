@@ -30,6 +30,7 @@ def b64dec(b): return b64decode(b).decode('utf-8')
 
 # Send message to chan
 from json import dumps as jsdumps
+# FIXME This, obviously, should not be hardcoded.
 toaddress = '2cUEpXgRYZAmVqqWd8tzAFLr8UXtCbZy4g'
 fromaddress = '2cW9hFSVrVs2AcqwKgkcx6QtL6fgXNa4AP'
 def send(subject, body):
@@ -50,10 +51,9 @@ def receive():
             try: body = jsloads(body)
             except ValueError: pass
             messages.append({'subject': subject, 'body': body, 'fromaddress': fromaddress})
-        #bitmessage.trashMessage(msgid)
+        bitmessage.trashMessage(msgid)
     if len(messages) > 0: print('transfered incoming messages: ', messages)
     return messages
 
 def close():
     bitmessageprocess.terminate()
-    bitmessageprocess.wait()

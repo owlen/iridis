@@ -4,13 +4,13 @@
 # them under one API, as a JSON-RPC server that can be accessed from a browser.
 
 # Since we are going to run some processes, let's make sure we exit cleanly
-from atexit import register
+from atexit import register as addtoexit
 def close():
     print("\nshutting down")
     color.close()
     message.close()
     bitcoin.close()
-register(close)
+addtoexit(close)
 
 # Then we can import the actual functionality
 import color, message, bitcoin
@@ -23,7 +23,7 @@ if __name__ == '__main__':
     from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCRequestHandler
     from http.server import SimpleHTTPRequestHandler
     from urllib.parse import urlparse, parse_qs
-    from json import dumps
+    from json import dumps, loads
     class Handler(SimpleHTTPRequestHandler, SimpleJSONRPCRequestHandler):
         def do_OPTIONS(self):
             self.send_response(200, 'ok')
@@ -44,13 +44,19 @@ if __name__ == '__main__':
             # Get data for different JSONp calls
             try:
                 if '/colorvalue.jsonp' == url.path:
-                    data = color.colorvalue(query['colordef'][0], query['txo'])
+                    data = color.colorvalue(query['colordef'][0], query['txo[]'])
                 elif '/makeconversion.jsonp' == url.path:
-                    data = color.makeconversion(query['txspec'][0], query['inputs'], query['keys'])
+                    data = color.makeconversion(loads(query['txspec'][0]))
                 elif '/receive.jsonp' == url.path:
                     data = message.receive()
                 elif '/send.jsonp' == url.path:
                     data = message.send(query['subject'][0], query['body'][0])
+                elif '/signrawtransaction.jsonp' == url.path:
+                    data = bitcoin.signrawtransaction(
+                        query['rawtx'][0],
+                        loads(query['inputs'][0]),
+                        query['keys[]']
+                    )
                 else:
                     data = {'error': 'Did not understand ' + url.path}
 
@@ -74,7 +80,8 @@ if __name__ == '__main__':
     server.register_function(message.receive, 'receive')
     server.register_function(bitcoin.signrawtransaction, 'signrawtransaction')
 
-    # Serve RPC
+    # Serve RPC till exit
+    addtoexit(server.shutdown)
     sockname = server.socket.getsockname()
     print("\nServing JSON, JSONp and HTTP on", sockname[0], "port", sockname[1], "...")
     try:

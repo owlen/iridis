@@ -17,3 +17,5 @@ PYTHONPATH=./PyBitmessage/src/ python -c 'from shared import lookupAppdataFolder
 The module runs it automatically when you run the trader.py script from the project's root, with the keys.dat configuration file and implements the close function that shuts it down.
 
 Protip: If you want to run multiple instances of PyBitmessage with different settings, you can override the lookupAppdataFolder function if PyBitmessage/src/shared.py line 132 and return any directory of your choosing.
+
+Protip: Playing with the name of the python executable in the Popen call in __init__.py can help you if you are not running on GNU/Linux.

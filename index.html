@@ -96,11 +96,11 @@ function jsonp(method, data, callback){
         type: 'GET',
         data: data,
         success:function(data){
-            if(null !== data && 'string' === typeof data.error) log(data.error);
+            if(null !== data && 'string' === typeof data.error) log(data.error, arguments);
             callback(data);
         },
         error:function(){
-            log('Unable to retrieve ' + url, arguments);
+            log('Unable to retrieve ' + method, arguments);
         }
     });
 };
@@ -149,14 +149,14 @@ function fulfilproposal(proposal){
                 10
             ]
         ];
-        jsonp('makeconversion', {'txspec': proposal.spec}, function(hex){
+        jsonp('makeconversion', {'txspec': JSON.stringify(proposal.spec)}, function(hex){
             var inputs = []
             $.each(wallet.blue.utxos, function(i, utxo){
                 inputs.push({'txid': utxo.txid, 'vout': utxo.vout, 'scriptPubKey': utxo.scriptPubKey})
             });
-            jsonp('signrawtransaction', {'rawtx': hex, 'inputs': inputs, 'keys': wallet.blue.prvkeys}, function(hex){
-                log(hex.hex, hex);
-                jsonp('send', {'subject': 'fulfil', 'body': hex.hex}, function(){ log('Fulfil sent'); });
+            jsonp('signrawtransaction', {'rawtx': hex, 'inputs': JSON.stringify(inputs), 'keys': wallet.blue.prvkeys}, function(tx){
+                log((tx.complete ? 'completely' : 'partially') + ' signed: ' + tx.hex, tx);
+                jsonp('send', {'subject': 'fulfil', 'body': tx.hex}, function(){ log('Fulfil sent'); });
             });
         });
     }).appendTo($('#content'));
@@ -186,13 +186,13 @@ function getmessages(){
                 $.each(wallet.red.utxos, function(i, utxo){
                     inputs.push({'txid': utxo.txid, 'vout': utxo.vout, 'scriptPubKey': utxo.scriptPubKey})
                 });
-                jsonp('signrawtransaction', {'rawtx': message.body, 'inputs': inputs, 'keys': wallet.red.prvkeys}, function(hex){
-                    log(hex.hex, hex);
+                jsonp('signrawtransaction', {'rawtx': message.body, 'inputs': JSON.stringify(inputs), 'keys': wallet.red.prvkeys}, function(tx){
+                    log((tx.complete ? 'completely' : 'partially') + ' signed: ' + tx.hex, tx);
                 });
             }
             log('received: ' + message.subject, message);
         });
-        //setTimeout('getmessages()', 1000);
+        setTimeout('getmessages()', 1000);
     });
 }
 
@@ -202,7 +202,7 @@ $(function(){
     scanwallet(wallet);
     getmessages();
     $('<button>').text('Alice: send proposal').click(function(){
-        jsonp('send', {'subject': 'proposal', 'body': filter}, function(){ log('Proposal sent'); });
+        jsonp('send', {'subject': 'proposal', 'body': JSON.stringify(filter)}, function(){ log('Proposal sent'); });
     }).appendTo($('#content'));
 });
 

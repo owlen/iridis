@@ -15,4 +15,6 @@ The module runs ngccc-server automatically on startup, and implements the close 
 
 Note that ngccc-server is currently hardcoded to run in testnet mode.
 
-Protip: you can install ngccc in a virtualenv, and change the name of the python executable in the Popen call in __init__.py to the python executable of your virtualenv.
+Also note that if you do not have enough coins in your ngccc testnet wallet (the file ```testnet.wallet```) to pay fees, the ```makeconversion``` call will fail. We will get rid of this dependancy soon by adding the fees to the proposal.
+
+Protip: you can install ngccc in a virtualenv, and change the name of the python executable in the Popen call in __init__.py to the python executable of your virtualenv. A similar trick might get you going if you want to get this running on Windows.

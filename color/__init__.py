@@ -26,6 +26,4 @@ colorserver = Server("http://127.0.0.1:%d" % (port,))
 # Implement required functionality
 def colorvalue(colordef, txo): return colorserver.colorvalue(colordef, txo)
 def makeconversion(txspec): return colorserver.makeconversion(txspec)
-def close():
-    ngcccprocess.terminate()
-    ngcccprocess.wait()
+def close(): ngcccprocess.terminate()

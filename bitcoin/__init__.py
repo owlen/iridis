@@ -29,4 +29,7 @@ def sendrawtransaction(rawtx):
 # Implement required functionality
 def close():
     bitcoind.stop()
-    bitcoindprocess.wait()
+    # FIXME should be a way to use 'communicate' here, but for now a delay will suffice.
+    from time import sleep
+    sleep(3)
+    bitcoindprocess.terminate()
