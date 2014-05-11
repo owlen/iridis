@@ -25,94 +25,62 @@
 
 var wallet = {
     red: {
-        definition: 'epobc:7d8d9b4b46d25893bff2cb04f5642e7645bd63fad8dbc552c9926c80fcaaec48:0:227476',
+        definition: 'obc:1737d32b3bfdd06a177435a00e4ddd8befe804daece3cfa19508f1ec7a2df2a9:0:241614',
         utxos: [
             {
-                txid: '7d8d9b4b46d25893bff2cb04f5642e7645bd63fad8dbc552c9926c80fcaaec48',
+                txid: '1737d32b3bfdd06a177435a00e4ddd8befe804daece3cfa19508f1ec7a2df2a9',
                 vout: 0,
-                scriptPubKey: '76a91477d01d5e300233dd7a825333c01e9c5fd4edb41388ac'
+                scriptPubKey: '76a914701c51bae66dee0733e7da0e59eb85c3c7e4aba088ac'
             }
         ],
         addresses: [
-            'mtvwhPxwXwwzMdSi6keubo5UXHuR6LJtmG'
+            'mqjjuCJBBHx8qb6aUMLpr8BW1kgpBasxqW'
         ],
         prvkeys: [
-            '93Hr5v7yk7e8KJvyhPnLhAEiotaczmVjn4SC212bTJL6im7xK4s'
+            '93Pf466pBtm66oQDcf19NxK7PdNkGyNVrpMqz2xwGgUqwZyo51D'
         ]
     },
     blue: {
-        definition: 'epobc:0c7ce15c9536fcf1e9c948a8ff4fe53d59b33c2785f8c06e58c33225ff992279:0:227476',
+        definition: 'obc:f9931ace552776defae1114f551cfb09a6453f13956e042e8d78a8fd42af804b:0:241616',
         utxos: [
             {
-                txid: '0c7ce15c9536fcf1e9c948a8ff4fe53d59b33c2785f8c06e58c33225ff992279',
+                txid: 'f9931ace552776defae1114f551cfb09a6453f13956e042e8d78a8fd42af804b',
                 vout: 0,
-                scriptPubKey: '76a91493231e95b05bef484d47dfec264e46577958817088ac'
+                scriptPubKey: '76a91418d1a2a45606ab1df27385db5a567c3776870fe388ac'
             }
         ],
         addresses: [
-            'mrSU1wpXhpZHcj7kfyzuSkzBHqhgRCD3vx'
+            'mhnBeNiuiQtkaPVaBUYkx6L3oAmboxjiZc'
         ],
         prvkeys: [
-            '93NgLRXNYohxTM5z7Ug3wiAqHDLRC7LDLPWmzqkqpzfVRu7Gcbj'
+            '92uLoBbJMvYKZtXPNLgG5n4MsbMJjMxJ1x1z4H5BtTJG1MYPJ19'
         ]
-    },
-    redobc: {
-        definition: 'obc:dcbe4e0a19123d5f8933dea209cda6885ef30ce82179107fa8ac002f5e6a0490:0:227615',
-        utxos: [
-            {
-                txid: 'dcbe4e0a19123d5f8933dea209cda6885ef30ce82179107fa8ac002f5e6a0490',
-                vout: 0,
-                scriptPubKey: '76a9149d32a8e72cb6b677918bf069652c64a62acc89b988ac'
-            }
-        ],
-        addresses: [
-            'mur955GgALPjoPfL4MDESkMmDWNZefwFBT'
-        ],
-        prvkeys: [
-            '928eYgrJ5obtLBz1VHhw2BSZTQgaBHC788KfqzudfYuBgUEL4Uh'
-        ]
-    },
-    blueobc: {
-        definition: 'obc:c58ed5f0cbd59088641bd348db0b0e26035642af811fd74f797dec88268ee587:0:227615',
-        utxos: [
-            {
-                txid: 'c58ed5f0cbd59088641bd348db0b0e26035642af811fd74f797dec88268ee587',
-                vout: 0,
-                scriptPubKey: '76a914373b2329ab39cc44c0099eaa0e6eecbb0a8ba19788ac'
-            }
-        ],
-        addresses: [
-            'mkYzJYHEJc6WmPuFiGFThGJGGqSBnv2B3Q'
-        ],
-        prvkeys: [
-            '92Mho9s6y65gHFKXZWwexrsqY1gHbEJ4FAJ9UVHF2dvdZjz6o6j'
-        ]
-    },
+    }
 };
 
 var filter = {
     'give': {
-        'definition': wallet.redobc.definition,
+        'definition': wallet.red.definition,
         'quantity': 10,
-        'utxos': wallet.redobc.utxos
+        'utxos': wallet.red.utxos
     },
     'take': {
-        'definition': wallet.blueobc.definition,
+        'definition': wallet.blue.definition,
         'quantity': 1,
-        'address': wallet.blueobc.addresses[0]
+        'address': wallet.blue.addresses[0]
     }
 };
 
 var otherfilter = {
     'give': {
-        'definition': wallet.blueobc.definition,
+        'definition': wallet.blue.definition,
         'quantity': 1,
-        'utxos': wallet.blueobc.utxos
+        'utxos': wallet.blue.utxos
     },
     'take': {
-        'definition': wallet.redobc.definition,
+        'definition': wallet.red.definition,
         'quantity': 10,
-        'address': wallet.redobc.addresses[0]
+        'address': wallet.red.addresses[0]
     }
 };
 
@@ -121,25 +89,21 @@ function log(msg){
     if('string' === typeof msg) $('#log').prepend($('<div>').text(msg));
 };
 
-function RPC(methodname, params, callback){
+function jsonp(method, data, callback){
     $.ajax({
-        url: 'http://127.0.0.1:6710',
-        type: 'POST',
-        contenType: 'application/json',
-        dataType: 'json',
-        data: JSON.stringify({
-            'jsonrpc': '2.0',
-            'method': methodname,
-            'params': params,
-            'id': 1
-        }),
-        success: function(response){
-            if('undefined' !== typeof response.error) return log('RPC error' + response.error.message, response);
-            callback(response.result);
+        url: method + '.jsonp',
+        dataType: 'jsonp',
+        type: 'GET',
+        data: data,
+        success:function(data){
+            if(null !== data && 'string' === typeof data.error) log(data.error);
+            callback(data);
         },
-        error: log
+        error:function(){
+            log('Unable to retrieve ' + url, arguments);
+        }
     });
-}
+};
 
 function scancolor(color, callback){
     if('number' !== typeof(color.checking)) color.checking = 0;
@@ -147,7 +111,7 @@ function scancolor(color, callback){
     color.value = 0;
     $.each(color.utxos, function(i, utxo){
         color.checking++;
-        RPC('colorvalue', [color.definition, [utxo.txid, utxo.vout]], function(value){
+        jsonp('colorvalue', {'colordef': color.definition, 'txo': [utxo.txid, utxo.vout]}, function(value){
             color.value += value;
             if(0 === --color.checking) callback(color);
         });
@@ -173,26 +137,26 @@ function fulfilproposal(proposal){
         proposal.spec = {};
         proposal.spec.inputs = {};
         proposal.spec.inputs[proposal.give.definition] = [$.map(proposal.give.utxos, txotolist)];
-        proposal.spec.inputs[wallet.blueobc.definition] = [$.map(wallet.blueobc.utxos, txotolist)];
+        proposal.spec.inputs[wallet.blue.definition] = [$.map(wallet.blue.utxos, txotolist)];
         proposal.spec.targets = [
             [
                 proposal.take.address,
                 proposal.take.definition,
                 proposal.take.quantity
             ], [
-                wallet.redobc.addresses[0],
-                wallet.redobc.definition,
+                wallet.red.addresses[0],
+                wallet.red.definition,
                 10
             ]
         ];
-        RPC('makeconversion', [proposal.spec], function(hex){
+        jsonp('makeconversion', {'txspec': proposal.spec}, function(hex){
             var inputs = []
-            $.each(wallet.blueobc.utxos, function(i, utxo){
+            $.each(wallet.blue.utxos, function(i, utxo){
                 inputs.push({'txid': utxo.txid, 'vout': utxo.vout, 'scriptPubKey': utxo.scriptPubKey})
             });
-            RPC('signrawtransaction', [hex, inputs, wallet.blueobc.prvkeys], function(hex){
+            jsonp('signrawtransaction', {'rawtx': hex, 'inputs': inputs, 'keys': wallet.blue.prvkeys}, function(hex){
                 log(hex.hex, hex);
-                RPC('send', ['fulfil', hex.hex], function(){ log('Fulfil sent'); });
+                jsonp('send', {'subject': 'fulfil', 'body': hex.hex}, function(){ log('Fulfil sent'); });
             });
         });
     }).appendTo($('#content'));
@@ -213,22 +177,22 @@ function filterproposal(filter, proposal){
 }
 
 function getmessages(){
-    RPC('receive', [], function(messages){
+    jsonp('receive', {}, function(messages){
         $.each(messages, function(i, message){
             if('proposal' === message.subject){
                 filterproposal(otherfilter, message.body);
             }else if('fulfil' === message.subject){
                 var inputs = []
-                $.each(wallet.redobc.utxos, function(i, utxo){
+                $.each(wallet.red.utxos, function(i, utxo){
                     inputs.push({'txid': utxo.txid, 'vout': utxo.vout, 'scriptPubKey': utxo.scriptPubKey})
                 });
-                RPC('signrawtransaction', [message.body, inputs, wallet.redobc.prvkeys], function(hex){
+                jsonp('signrawtransaction', {'rawtx': message.body, 'inputs': inputs, 'keys': wallet.red.prvkeys}, function(hex){
                     log(hex.hex, hex);
                 });
             }
             log('received: ' + message.subject, message);
         });
-        setTimeout('getmessages()', 1000);
+        //setTimeout('getmessages()', 1000);
     });
 }
 
@@ -238,7 +202,7 @@ $(function(){
     scanwallet(wallet);
     getmessages();
     $('<button>').text('Alice: send proposal').click(function(){
-        RPC('send', ['proposal', filter], function(){ log('Proposal sent'); });
+        jsonp('send', {'subject': 'proposal', 'body': filter}, function(){ log('Proposal sent'); });
     }).appendTo($('#content'));
 });
 

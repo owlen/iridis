@@ -44,9 +44,13 @@ if __name__ == '__main__':
             # Get data for different JSONp calls
             try:
                 if '/colorvalue.jsonp' == url.path:
-                    colordef = query['colordef'][0]
-                    txo = query['txo']
-                    data = color.colorvalue(colordef, txo)
+                    data = color.colorvalue(query['colordef'][0], query['txo'])
+                elif '/makeconversion.jsonp' == url.path:
+                    data = color.makeconversion(query['txspec'][0], query['inputs'], query['keys'])
+                elif '/receive.jsonp' == url.path:
+                    data = message.receive()
+                elif '/send.jsonp' == url.path:
+                    data = message.send(query['subject'][0], query['body'][0])
                 else:
                     data = {'error': 'Did not understand ' + url.path}
 
