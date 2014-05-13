@@ -55,32 +55,51 @@ var wallet = {
         prvkeys: [
             '92uLoBbJMvYKZtXPNLgG5n4MsbMJjMxJ1x1z4H5BtTJG1MYPJ19'
         ]
+    },
+    GLD: {
+        definition: 'obc:b2e2fe91385b66b413d23d00c45d2958c273ba6248c2a5da0d3738ccffef74e9:0:242505',
+        utxos: [
+            {
+                txid: '0c6364e2e35b8bee769225f90d992771ff1bc2b868fa388b085456261fb521ee',
+                vout: 0,
+                scriptPubKey: '76a914cbf3f79259766fe34014363760c49049e9c1c18d88ac'
+            }
+        ],
+        addresses: [
+            'mz7Mj8DfMscv9zkUCCxDsnGaC8Q73bASE8'
+        ],
+        prvkeys: [
+            '93AVMYk31219YwyjGGeyRaq91ybVsTKpprH1WHdU6My2ADnFgD7'
+        ]
+    },
+    SLV: {
+        definition: 'obc:ebf6742cd705bfd3dbfb6470dadbf248a6cf90f4b54775ad54ce79ed45bd6365:0:242505',
+        utxos: [
+            {
+                txid: 'beaccaf25accb9a4028ccd6bf2df3aa78b8557f42f91721e6267daa00b4d6879',
+                vout:  0,
+                scriptPubKey: '76a9140ad64c38b0c229ad040f8b2ad50ef7bddba1d0d588ac'
+            }
+        ],
+        addresses: [
+            'mgWFme6LrUZdAaE7xMvE6hyL85DzkccCrF'
+        ],
+        prvkeys: [
+            '93U3qiBeRuKKvcq6EgtQNNeDVsxhq8RWXHxG71W3EstesTquoQT'
+        ]
     }
 };
 
 var filter = {
     'give': {
-        'definition': wallet.red.definition,
-        'quantity': 10,
-        'utxos': wallet.red.utxos
+        'definition': wallet.SLV.definition,
+        'quantity': 500,
+        'utxos': wallet.SLV.utxos
     },
     'take': {
-        'definition': wallet.blue.definition,
-        'quantity': 1,
-        'address': wallet.blue.addresses[0]
-    }
-};
-
-var otherfilter = {
-    'give': {
-        'definition': wallet.blue.definition,
-        'quantity': 1,
-        'utxos': wallet.blue.utxos
-    },
-    'take': {
-        'definition': wallet.red.definition,
+        'definition': wallet.GLD.definition,
         'quantity': 10,
-        'address': wallet.red.addresses[0]
+        'address': wallet.GLD.addresses[0]
     }
 };
 
@@ -137,24 +156,24 @@ function fulfilproposal(proposal){
         proposal.spec = {};
         proposal.spec.inputs = {};
         proposal.spec.inputs[proposal.give.definition] = [$.map(proposal.give.utxos, txotolist)];
-        proposal.spec.inputs[wallet.blue.definition] = [$.map(wallet.blue.utxos, txotolist)];
+        proposal.spec.inputs[wallet.SLV.definition] = [$.map(wallet.SLV.utxos, txotolist)];
         proposal.spec.targets = [
             [
                 proposal.take.address,
                 proposal.take.definition,
                 proposal.take.quantity
             ], [
-                wallet.red.addresses[0],
-                wallet.red.definition,
+                wallet.GLD.addresses[0],
+                wallet.GLD.definition,
                 10
             ]
         ];
         jsonp('makeconversion', {'txspec': JSON.stringify(proposal.spec)}, function(hex){
             var inputs = []
-            $.each(wallet.blue.utxos, function(i, utxo){
+            $.each(wallet.SLV.utxos, function(i, utxo){
                 inputs.push({'txid': utxo.txid, 'vout': utxo.vout, 'scriptPubKey': utxo.scriptPubKey})
             });
-            jsonp('signrawtransaction', {'rawtx': hex, 'inputs': JSON.stringify(inputs), 'keys': wallet.blue.prvkeys}, function(tx){
+            jsonp('signrawtransaction', {'rawtx': hex, 'inputs': JSON.stringify(inputs), 'keys': wallet.SLV.prvkeys}, function(tx){
                 log((tx.complete ? 'completely' : 'partially') + ' signed: ' + tx.hex, tx);
                 jsonp('send', {'subject': 'fulfil', 'body': tx.hex}, function(){ log('Fulfil sent'); });
             });
@@ -180,13 +199,13 @@ function getmessages(){
     jsonp('receive', {}, function(messages){
         $.each(messages, function(i, message){
             if('proposal' === message.subject){
-                filterproposal(otherfilter, message.body);
+                filterproposal(filter, message.body);
             }else if('fulfil' === message.subject){
                 var inputs = []
-                $.each(wallet.red.utxos, function(i, utxo){
+                $.each(wallet.SLV.utxos, function(i, utxo){
                     inputs.push({'txid': utxo.txid, 'vout': utxo.vout, 'scriptPubKey': utxo.scriptPubKey})
                 });
-                jsonp('signrawtransaction', {'rawtx': message.body, 'inputs': JSON.stringify(inputs), 'keys': wallet.red.prvkeys}, function(tx){
+                jsonp('signrawtransaction', {'rawtx': message.body, 'inputs': JSON.stringify(inputs), 'keys': wallet.SLV.prvkeys}, function(tx){
                     log((tx.complete ? 'completely' : 'partially') + ' signed: ' + tx.hex, tx);
                 });
             }
