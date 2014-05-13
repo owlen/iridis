@@ -61,15 +61,15 @@ var wallet = {
         utxos: [
             {
                 txid: '0c6364e2e35b8bee769225f90d992771ff1bc2b868fa388b085456261fb521ee',
-                vout: 0,
-                scriptPubKey: '76a914cbf3f79259766fe34014363760c49049e9c1c18d88ac'
+                vout: 1,
+                scriptPubKey: '76a9145fc873e317b6b8da72b8d936581dc1ef3ee97aed88ac'
             }
         ],
         addresses: [
-            'mz7Mj8DfMscv9zkUCCxDsnGaC8Q73bASE8'
+            'mpFQcyUfaYr6JMXw4zgraL4UEoM3ggGJk5'
         ],
         prvkeys: [
-            '93AVMYk31219YwyjGGeyRaq91ybVsTKpprH1WHdU6My2ADnFgD7'
+            '93VoRNsS59mmkhQtgRHc6KvghqKdj7xvsUQGJBkxGgJJRfrYYyq'
         ]
     },
     SLV: {
@@ -77,29 +77,29 @@ var wallet = {
         utxos: [
             {
                 txid: 'beaccaf25accb9a4028ccd6bf2df3aa78b8557f42f91721e6267daa00b4d6879',
-                vout:  0,
-                scriptPubKey: '76a9140ad64c38b0c229ad040f8b2ad50ef7bddba1d0d588ac'
+                vout:  1,
+                scriptPubKey: '76a9143afcddce46f920376f5f6bb6bb0bc8b4caf84f1488ac'
             }
         ],
         addresses: [
-            'mgWFme6LrUZdAaE7xMvE6hyL85DzkccCrF'
+            'mktrQeX25xog4xBWDtwmLcxXsBb6uN9Gpj'
         ],
         prvkeys: [
-            '93U3qiBeRuKKvcq6EgtQNNeDVsxhq8RWXHxG71W3EstesTquoQT'
+            '91rWCR6sycpNPR6Nwvr4H7ZKufb7cp68Sm34o7Ne8xPBf87aLg3'
         ]
     }
 };
 
 var filter = {
     'give': {
-        'definition': wallet.SLV.definition,
-        'quantity': 500,
-        'utxos': wallet.SLV.utxos
-    },
-    'take': {
         'definition': wallet.GLD.definition,
         'quantity': 10,
-        'address': wallet.GLD.addresses[0]
+        'utxos': wallet.GLD.utxos
+    },
+    'take': {
+        'definition': wallet.SLV.definition,
+        'quantity': 500,
+        'address': wallet.SLV.addresses[0]
     }
 };
 
@@ -156,24 +156,24 @@ function fulfilproposal(proposal){
         proposal.spec = {};
         proposal.spec.inputs = {};
         proposal.spec.inputs[proposal.give.definition] = [$.map(proposal.give.utxos, txotolist)];
-        proposal.spec.inputs[wallet.SLV.definition] = [$.map(wallet.SLV.utxos, txotolist)];
+        proposal.spec.inputs[wallet.GLD.definition] = [$.map(wallet.GLD.utxos, txotolist)];
         proposal.spec.targets = [
             [
                 proposal.take.address,
                 proposal.take.definition,
                 proposal.take.quantity
             ], [
-                wallet.GLD.addresses[0],
-                wallet.GLD.definition,
-                10
+                wallet.SLV.addresses[0],
+                wallet.SLV.definition,
+                500
             ]
         ];
         jsonp('makeconversion', {'txspec': JSON.stringify(proposal.spec)}, function(hex){
             var inputs = []
-            $.each(wallet.SLV.utxos, function(i, utxo){
+            $.each(wallet.GLD.utxos, function(i, utxo){
                 inputs.push({'txid': utxo.txid, 'vout': utxo.vout, 'scriptPubKey': utxo.scriptPubKey})
             });
-            jsonp('signrawtransaction', {'rawtx': hex, 'inputs': JSON.stringify(inputs), 'keys': wallet.SLV.prvkeys}, function(tx){
+            jsonp('signrawtransaction', {'rawtx': hex, 'inputs': JSON.stringify(inputs), 'keys': wallet.GLD.prvkeys}, function(tx){
                 log((tx.complete ? 'completely' : 'partially') + ' signed: ' + tx.hex, tx);
                 jsonp('send', {'subject': 'fulfil', 'body': tx.hex}, function(){ log('Fulfil sent'); });
             });
@@ -202,16 +202,16 @@ function getmessages(){
                 filterproposal(filter, message.body);
             }else if('fulfil' === message.subject){
                 var inputs = []
-                $.each(wallet.SLV.utxos, function(i, utxo){
+                $.each(wallet.GLD.utxos, function(i, utxo){
                     inputs.push({'txid': utxo.txid, 'vout': utxo.vout, 'scriptPubKey': utxo.scriptPubKey})
                 });
-                jsonp('signrawtransaction', {'rawtx': message.body, 'inputs': JSON.stringify(inputs), 'keys': wallet.SLV.prvkeys}, function(tx){
+                jsonp('signrawtransaction', {'rawtx': message.body, 'inputs': JSON.stringify(inputs), 'keys': wallet.GLD.prvkeys}, function(tx){
                     log((tx.complete ? 'completely' : 'partially') + ' signed: ' + tx.hex, tx);
                 });
             }
             log('received: ' + message.subject, message);
         });
-        setTimeout('getmessages()', 1000);
+//        setTimeout('getmessages()', 1000);
     });
 }
 
