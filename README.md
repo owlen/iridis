@@ -87,8 +87,8 @@ git submodule update
 ```
 ### running
 
-In the current branch, you can simply run ```./trader.py```, which includes a small web server, and browse to [http://localhost:8000](http://localhost:8000) to run the demo web app.
+In the current branch, you can simply run `trader.py` which includes a small web server, and browse to [http://localhost:8000](http://localhost:8000) to run the demo web app.
 
-This script activates the messaging layer and the coloring library, so make sure you followed the instructions in the readme files in the ```message``` and ```color``` directories.
+This script activates the messaging layer and the coloring library, so make sure you followed the instructions in the readme files in the `message` and `color` directories.
 
 Soon you will be able to check out other branches, like a market viewer branch with a web UI, a testscript branch, which has a test script instead of a web UI, a market maker branch, and the long awaited multibit branch, which isn't yet well integrated into our framework, so you will need to work harder to run it. Much fun ahead.
