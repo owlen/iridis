@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+        <meta charset="utf-8">
+        <title>Iridis Market Viewer</title>
+        <meta name="description" content="Iridis Market Viewer">
+        <style>
+            #nojs{
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                width: 100%;
+                background: yellow;
+                color: red;
+            }
+            #log{
+                width: 100%;
+                background: yellow;
+                color: black;
+            }
+        </style>
+        <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+        <script type="text/javascript">
+
+function log(msg){
+    console.log(arguments);
+    if('string' === typeof msg) $('#log').prepend($('<div>').html(msg));
+};
+
+function jsonp(method, data, callback){
+    $.ajax({
+        url: method + '.jsonp',
+        dataType: 'jsonp',
+        type: 'GET',
+        data: data,
+        success:function(data){
+            if(null !== data && 'string' === typeof data.error) log(data.error, arguments);
+            callback(data);
+        },
+        error:function(){
+            log('Unable to retrieve ' + method, arguments);
+        }
+    });
+};
+
+var colors = {};
+function addcolor(colordef){
+    if(colordef in colors) return;
+    colors[colordef] = {
+        'colordef': colordef,
+        'moniker': 'unknown'
+    };
+}
+
+var pairs = [];
+function getpair(colordef1, colordef2){
+    var returnpair = false;
+
+    // Return pair if it exists
+    $.each(pairs, function(idx, pair){
+        if(
+            $.inArray(colordef1, pair.colordefs) >= 0 &&
+            $.inArray(colordef2, pair.colordefs) >= 0
+        ){
+            returnpair = pair;
+            return false;
+        }
+    });
+    if(false !== returnpair){
+        return returnpair;
+    }
+
+    // or create a new one.
+    returnpair = pairskelaton.clone().extend({
+        'colordefs': [colordef1, colordef2]
+    }).find('h2').text(
+        colordef1 + ' vs. ' + colordef2
+    ).end();
+    pairs.push(returnpair);
+    return returnpair.appendTo(content);
+}
+
+function showproposal(proposal){
+    addcolor(proposal.give.definition);
+    addcolor(proposal.take.definition);
+    var p = getpair(proposal.give.definition, proposal.take.definition);
+    p.append($('<div>').text(proposal.give.quantity + ' : ' + proposal.take.quantity));
+}
+
+function getmessages(){
+    jsonp('receive', {}, function(messages){
+        $.each(messages, function(i, message){
+            if('proposal' === message.subject){
+                showproposal(message.body);
+            }else if('fulfil' === message.body){
+                ;
+            }else if('confirm' == message.body){
+                ;
+            }
+        });
+        //setTimeout('getmessages()', 1000);
+    });
+}
+
+var content;
+var pairskelaton;
+$(function(){
+    $('#nojs').remove();
+    log('js detected');
+    content = $('#content');
+    pairskelaton = $('#pairskelaton').remove().show();
+    getmessages();
+});
+
+        </script>
+    </head>
+    <body>
+        <div id="nojs">If you are connected to the Internet and have JavaScript enabled then we have a showstopping bug.</div>
+        <div id="content"></div>
+        <div id="log"></div>
+        <div id="pairskelaton" class="pair" style="display:none">
+            <h2>color vs color</h2>
+        </div>
+    </body>
+</html>
+<!--
+vim: ft=javascript
+-->
