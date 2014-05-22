@@ -51,9 +51,35 @@ def receive():
             try: body = jsloads(body)
             except ValueError: pass
             messages.append({'subject': subject, 'body': body, 'fromaddress': fromaddress})
-        bitmessage.trashMessage(msgid)
+        #bitmessage.trashMessage(msgid)
     if len(messages) > 0: print('transfered incoming messages: ', messages)
     return messages
 
 def close():
     bitmessageprocess.terminate()
+
+if __name__ == '__main__':
+    try:
+        while True:
+            subject = input('subject: ')
+            if 'proposal' == subject:
+                give = {}
+                give['colordef'] = input('give colordef: ')
+                give['quantity'] = input('give quantity: ')
+                give['utxos'] = []
+                for i in range(input('how many utxos: ')):
+                    txid = input('txid: ')
+                    vout = input('vout: ')
+                    scriptPubKey = input('scriptPubKey: ')
+                    give['utxos'].append({'txid': txid, 'vout': vout, 'scriptPubKey': scriptPubKey})
+                take = {}
+                take['colordef'] = input('take colordef: ')
+                take['quantity'] = input('take quantity: ')
+                take['address'] = input('take address: ')
+                body = {'scheme': -1, 'version': -1, 'take': take, 'give': give, proposalid: input('proposal hash: ')}
+            else: body = input('free text for message body: ')
+            if 'y' == input('send this message? (y/n) '): send(subject, body)
+    except KeyboardInterrupt:
+        close()
+        from sys import exit
+        exit(0)
