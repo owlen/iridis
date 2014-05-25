@@ -1,0 +1,102 @@
+#nojs{
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    background: yellow;
+    color: red;
+}
+#log{
+    width: 100%;
+    background: yellow;
+    color: black;
+}
+
+#proposal{
+    width: 28em;
+    border: 0.5em solid #FFCCCC;
+    padding: 1em;
+    overflow: auto;
+    text-align: center;
+    float: left;
+}
+#proposal div.give{
+    float: left;
+}
+#proposal div.take{
+    float: right;
+}
+
+#fulfil{
+    width: 28em;
+    border: 0.5em solid #CCCCFF;
+    padding: 1em;
+    overflow: auto;
+    text-align: center;
+    float: left;
+}
+#fulfil div.give{
+    float: right;
+}
+#fulfil div.take{
+    float: left;
+}
+
+#market{
+    width: 59em;
+    border: 0.5em solid #CCFFCC;
+    padding: 1em;
+    overflow: auto;
+    text-align: center;
+}
+#market table{
+    min-width: 35em;
+}
+div.pair{
+    clear: both;
+}
+table.proposalsa{
+    float: left;
+}
+table.proposalsb{
+    float: right;
+}
+
+table.tablesorter {
+	font-size: 12px;
+	background-color: #4D4D4D;
+	border: 1px solid #000;
+}
+table.tablesorter th {
+	text-align: left;
+	padding: 5px;
+	background-color: #6E6E6E;
+}
+table.tablesorter td {
+	color: #FFF;
+	padding: 5px;
+}
+table.tablesorter .even {
+	background-color: #3D3D3D;
+}
+table.tablesorter .odd {
+	background-color: #6E6E6E;
+}
+table.tablesorter .header {
+	background-image: url(img/bg.png);
+	background-repeat: no-repeat;
+	border-left: 1px solid #FFF;
+	border-right: 1px solid #000;
+	border-top: 1px solid #FFF;
+	padding-left: 30px;
+	padding-top: 8px;
+	height: auto;
+}
+table.tablesorter .headerSortUp {
+	background-image: url(img/asc.png);
+	background-repeat: no-repeat;
+}
+table.tablesorter .headerSortDown {
+	background-image: url(img/desc.png);
+	background-repeat: no-repeat;
+}

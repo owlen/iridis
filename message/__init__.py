@@ -51,7 +51,7 @@ def receive():
             try: body = jsloads(body)
             except ValueError: pass
             messages.append({'subject': subject, 'body': body, 'fromaddress': fromaddress})
-        #bitmessage.trashMessage(msgid)
+        bitmessage.trashMessage(msgid)
     if len(messages) > 0: print('transfered incoming messages: ', messages)
     return messages
 
@@ -59,6 +59,12 @@ def close():
     bitmessageprocess.terminate()
 
 if __name__ == '__main__':
+    wallet = {
+        'obc:1737d32b3bfdd06a177435a00e4ddd8befe804daece3cfa19508f1ec7a2df2a9:0:241614': 'red',
+        'obc:f9931ace552776defae1114f551cfb09a6453f13956e042e8d78a8fd42af804b:0:241616': 'blue',
+        'obc:b2e2fe91385b66b413d23d00c45d2958c273ba6248c2a5da0d3738ccffef74e9:0:242505': 'GLD',
+        'obc:ebf6742cd705bfd3dbfb6470dadbf248a6cf90f4b54775ad54ce79ed45bd6365:0:242505': 'SLV'
+    }
     try:
         while True:
             subject = input('subject: ')
@@ -67,7 +73,7 @@ if __name__ == '__main__':
                 give['colordef'] = input('give colordef: ')
                 give['quantity'] = input('give quantity: ')
                 give['utxos'] = []
-                for i in range(input('how many utxos: ')):
+                for i in range(int(input('how many utxos: '))):
                     txid = input('txid: ')
                     vout = input('vout: ')
                     scriptPubKey = input('scriptPubKey: ')
@@ -76,9 +82,9 @@ if __name__ == '__main__':
                 take['colordef'] = input('take colordef: ')
                 take['quantity'] = input('take quantity: ')
                 take['address'] = input('take address: ')
-                body = {'scheme': -1, 'version': -1, 'take': take, 'give': give, proposalid: input('proposal hash: ')}
+                body = {'scheme': -1, 'version': -1, 'take': take, 'give': give, 'proposalid': input('proposal hash: ')}
             else: body = input('free text for message body: ')
-            if 'y' == input('send this message? (y/n) '): send(subject, body)
+            if 'y' == input('send this message? (y/n) '): print(send(subject, body))
     except KeyboardInterrupt:
         close()
         from sys import exit
