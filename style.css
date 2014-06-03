@@ -10,47 +10,18 @@
     width: 100%;
     background: yellow;
     color: black;
-}
-
-#proposal{
-    width: 28em;
-    border: 0.5em solid #FFCCCC;
-    padding: 1em;
-    overflow: auto;
-    text-align: center;
-    float: left;
-}
-#proposal div.give{
-    float: left;
-}
-#proposal div.take{
-    float: right;
-}
-
-#fulfil{
-    width: 28em;
-    border: 0.5em solid #CCCCFF;
-    padding: 1em;
-    overflow: auto;
-    text-align: center;
-    float: left;
-}
-#fulfil div.give{
-    float: right;
-}
-#fulfil div.take{
     float: left;
 }
 
 #market{
-    width: 59em;
-    border: 0.5em solid #CCFFCC;
+    width: 75em;
+    border: 0.5em solid #CCCCCC;
     padding: 1em;
     overflow: auto;
     text-align: center;
 }
 #market table{
-    min-width: 35em;
+    min-width: 45em;
 }
 div.pair{
     clear: both;
@@ -62,9 +33,34 @@ table.proposalsb{
     float: right;
 }
 
+#proposal, #fulfil, #accept{
+    width: 24em;
+    height: 30em;
+    border: 0.5em solid black;
+    padding: 0.5em;
+    overflow: auto;
+    text-align: center;
+    float: left;
+}
+#proposal{
+    border-color: #CCCCFF;
+}
+#fulfil{
+    border-color: #FFCCCC;
+}
+#accept{
+    border-color: #CCFFCC;
+}
+#proposal div.give, #fulfil div.take, #accept div.give{
+    float: left;
+}
+#proposal div.take, #fulfil div.give, #accept div.take{
+    float: right;
+}
+
 table.tablesorter {
 	font-size: 12px;
-	background-color: #4D4D4D;
+	background-color: #9999FF;
 	border: 1px solid #000;
 }
 table.tablesorter th {

@@ -7,15 +7,15 @@
         <meta name="description" content="Iridis Market Viewer">
         <script src="http://code.jquery.com/jquery-latest.min.js"></script>
         <script src="https://rawgit.com/christianbach/tablesorter/master/jquery.tablesorter.min.js"></script>
+        <script src="https://rawgit.com/alexweber/jquery.sha256/master/jquery.sha256.min.js"></script>
         <script src="marketview.js"></script>
         <link rel="stylesheet" type="text/css" href="style.css">
     </head>
     <body>
         <div id="nojs">If you are connected to the Internet and have JavaScript enabled then we have a showstopping bug.</div>
         <div id="market"></div>
-        <div id="log"></div>
         <div class="pair" style="display:none;">
-            <h2>color vs color</h2>
+            <h1>color vs color</h1>
             <table class="proposalsa tablesorter">
                 <thead>
                     <tr>
@@ -55,6 +55,8 @@
         </div>
         <div id="proposal">
             <h2>Make a proposal</h2>
+            <button id="sendproposal">send it</button>
+            <br>
             <div class="give">
                 <h3>Give</h3>
                 <p>colordef</p>
@@ -62,7 +64,7 @@
                 <p>quantity</p>
                 <input class="quantity">
                 <p>utxos</p>
-                <textarea class="utxos"></textarea>
+                <textarea class="utxos">[{"txid": "test txid", "vout": 0, "scriptPubKey": "test scriptpubkey"}]</textarea>
             </div>
             <div class="take">
                 <h3>Take</h3>
@@ -71,12 +73,14 @@
                 <p>quantity</p>
                 <input class="quantity">
                 <p>address</p>
-                <input class="address">
+                <input class="address" value="test address">
             </div>
-            <button id="sendproposal">send it</button>
         </div>
         <div id="fulfil">
             <h2>Fulfil a proposal</h2>
+            <input class="proposalhash">
+            <button id="sendfulfil">send it</button>
+            <br>
             <div class="take">
                 <h3>Take</h3>
                 <p>colordef</p>
@@ -84,7 +88,7 @@
                 <p>quantity</p>
                 <input class="quantity">
                 <p>address</p>
-                <input class="address">
+                <input class="address" value="test address">
             </div>
             <div class="give">
                 <h3>Give</h3>
@@ -93,9 +97,38 @@
                 <p>quantity</p>
                 <input class="quantity">
                 <p>utxos</p>
-                <textarea class="utxos"></textarea>
+                <textarea class="utxos">[{"txid": "test txid", "vout": 0, "scriptPubKey": "test scriptpubkey"}]</textarea>
+                <p>private keys</p>
+                <input class="pvtkeys" value="[&quot;testing key&quot;]">
             </div>
-            <button id="sendfulfil">send it</button>
         </div>
+        <div id="accept">
+            <h2>Accept a fulfil</h2>
+            <input class="fulfilhash">
+            <button id="acceptfulfil">accept it</button>
+            <br>
+            <div class="take">
+                <h3>Take</h3>
+                <p>colordef</p>
+                <input class="colordef">
+                <p>quantity</p>
+                <input class="quantity">
+                <p>address</p>
+                <input class="address" value="test address">
+            </div>
+            <div class="give">
+                <h3>Give</h3>
+                <p>colordef</p>
+                <input class="colordef">
+                <p>quantity</p>
+                <input class="quantity">
+                <p>utxos</p>
+                <textarea class="utxos">[{"txid": "test txid", "vout": 0, "scriptPubKey": "test scriptpubkey"}]</textarea>
+                <p>private keys</p>
+                <input class="pvtkeys" value="[&quot;testing key&quot;]">
+            </div>
+        </div>
+        <br>
+        <div id="log"></div>
     </body>
 </html>
