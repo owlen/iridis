@@ -46,10 +46,8 @@ function watchfortx(txid, callback){
 
 // Colors we know about. TODO These should be in an ini file or something.
 var colors = {
-    'obc:1737d32b3bfdd06a177435a00e4ddd8befe804daece3cfa19508f1ec7a2df2a9:0:241614': 'red',
-    'obc:f9931ace552776defae1114f551cfb09a6453f13956e042e8d78a8fd42af804b:0:241616': 'blue',
-    'obc:b2e2fe91385b66b413d23d00c45d2958c273ba6248c2a5da0d3738ccffef74e9:0:242505': 'GLD',
-    'obc:ebf6742cd705bfd3dbfb6470dadbf248a6cf90f4b54775ad54ce79ed45bd6365:0:242505': 'SLV'
+    'obc:e738ac54b03a4f159e1412456bfb6b712e6c0730a73962d8e8fbcace07e8b031:0:260522': 'GLD',
+    'obc:ee8c695734be4971a99e8f036c2ae6c10a5696cbe39646f9739cca39d1c63e7d:0:260524': 'SLV'
 };
 
 // Replace given elements with a dropdown selection of colors.
@@ -242,7 +240,7 @@ function getmessages(){
                 showaccept(message.body);
             }
         });
-        setTimeout('getmessages()', 1000);
+        //setTimeout('getmessages()', 1000);
     });
 }
 
@@ -273,6 +271,10 @@ function sendproposal(form){
     );
 }
 
+// Helper function to turn a bitcoind flavored JSON TXO to ngccc tuple.
+// The double square brackets prevent jquery's map from flattening the array.
+function txobj2tuple(txo){return [[txo.txid, txo.vout]];}
+
 // Sends a fulfil.
 function sendfulfil(form){
 
@@ -284,7 +286,8 @@ function sendfulfil(form){
         'colordef': give.find('select.colordef').val(),
         'quantity': give.find('input.quantity').val(),
         'utxos': $.parseJSON(give.find('textarea.utxos').val()),
-        'pvtkeys': $.parseJSON(give.find('input.pvtkeys').val())
+        'pvtkeys': $.parseJSON(give.find('input.pvtkeys').val()),
+        'address': proposal['take']['address']
     };
     var take = form.find('div.take');
     take = {
@@ -297,9 +300,12 @@ function sendfulfil(form){
     var txspec = {};
     txspec.inputs = {};
     txspec.inputs[proposal.give.colordef] = $.map(
-        proposal.give.utxos, function(txo){return [txo.txid, txo.vout];}
+        proposal.give.utxos, txobj2tuple
     );
-    txspec.inputs[give.colordef] = give.utxos;
+    txspec.inputs[give.colordef] = $.map(
+        give.utxos, txobj2tuple
+    );
+
     txspec.targets = [
         [
             give.address,
@@ -312,19 +318,15 @@ function sendfulfil(form){
         ]
     ];
 
-    // FIXME In theory, this is where we construct the transaction.
-    log('Pretending to construct a conversion'); hex = JSON.stringify(txspec);
-    //jsonp('makeconversion', {'txspec': JSON.stringify(txspec)}, function(hex){
-        // FIXME In theory, this is where we sign our inputs.
-        log('Pretending to sign our inputs'); tx = {"hex": hex, "complete": false};
-    //    jsonp(
-    //        'signrawtransaction',
-    //        {
-    //            'rawtx': tx.hex,
-    //            'inputs': $.merge(proposal.give.utxos, give.utxos),
-    //            'keys': give.pvtkeys
-    //        },
-    //        function(tx){
+    jsonp('makeconversion', {'txspec': JSON.stringify(txspec)}, function(tx){
+        jsonp(
+            'signrawtransaction',
+            {
+                'rawtx': tx.hex,
+                'inputs': $.merge(proposal.give.utxos, give.utxos),
+                'keys': give.pvtkeys
+            },
+            function(tx){
                 log(
                     (tx.complete ? 'completely' : 'partially') + ' signed',
                     tx.hex
@@ -344,9 +346,9 @@ function sendfulfil(form){
                         log('sending fulfil in msg ' + msgid, fulfil);
                     }
                 );
-    //        }
-    //    );
-    //});
+            }
+        );
+    });
 }
 
 // Accepts a fulfil.
@@ -372,23 +374,19 @@ function acceptfulfil(form){
         'address': take.find('input.address').val()
     };
 
-    // FIXME In theory, this is where we sign our inputs.
-    log('Pretending to sign our inputs'); tx = {"hex": hex, "complete": true};
-//    jsonp(
-//        'signrawtransaction',
-//        {
-//            'rawtx': tx.hex,
-//            'inputs': fulfil.utxos,
-//            'keys': give.pvtkeys
-//        },
-//        function(tx){
+    jsonp(
+        'signrawtransaction',
+        {
+            'rawtx': tx.hex,
+            'inputs': fulfil.utxos,
+            'keys': give.pvtkeys
+        },
+        function(tx){
             log(
                 (tx.complete ? 'completely' : 'partially') + ' signed',
                 tx.hex
             );
-            // FIXME, In theory, this is where we broadcast the transaction.
-            log('Pretending to broadcast transaction'); txid = '5e77d078a4e9281aa577bfa424a042166d63e1a8c09abe5fd20280eabbc9a1f7';
-//            jsonp('sendrawtransaction', {'rawtx': tx.hex}, function(txid){
+            jsonp('sendrawtransaction', {'rawtx': tx.hex}, function(txid){
                 jsonp(
                     'send',
                     {
@@ -403,10 +401,9 @@ function acceptfulfil(form){
                         log('sending accept in msg ' + msgid, fulfilhash, tx.hex);
                     }
                 );
-//            });
-//        }
-//    );
-//});
+            });
+        }
+    );
 }
 
 var marketdiv;
