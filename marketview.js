@@ -89,9 +89,24 @@ function getpair(colordef1, colordef2){
     }).find('h1').html(
         (colors[colordef1] || 'unrecognized') + ' vs. ' + (colors[colordef2] || 'unrecognized')
     ).end();
-    pairs.push(returnpair);
-    returnpair.find('table').tablesorter();
     marketdiv.append(returnpair);
+    returnpair.find('table').tablesorter();
+    returnpair.graph = new Dygraph(
+        returnpair.find('.graph').get(0),
+        'Time, Price a->b, Price b->a' + "\n" +
+        {
+            'drawPoints': true,
+            'showRoller': true
+        }
+    );
+    // FIXME
+    returnpair.graph.updateOptions({'file':
+        'Time, Price a->b, Price b->a' + "\n" +
+        '0,1,10' + "\n" +
+        '1,2,7' + "\n" +
+        '2,4,6'
+    });
+    pairs.push(returnpair);
     return returnpair
 }
 

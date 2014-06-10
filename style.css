@@ -18,18 +18,26 @@
     border: 0.5em solid #CCCCCC;
     padding: 1em;
     overflow: auto;
+}
+div.pair h1{
     text-align: center;
 }
-#market table{
-    min-width: 45em;
+div.pair div.graph{
+    clear: both;
+    width: 70em;
+    height: 100px;
+    margin-bottom: 2em;
 }
 div.pair{
     clear: both;
 }
-table.proposalsa{
+div.pair table{
+    min-width: 45em;
+}
+div.pair table.proposalsa{
     float: left;
 }
-table.proposalsb{
+div.pair table.proposalsb{
     float: right;
 }
 
