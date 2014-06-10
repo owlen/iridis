@@ -1,15 +1,26 @@
 // Formatted time.
-function time(){
-    var d = new Date();
-    return $.map([d.getHours(), d.getMinutes(), d.getSeconds()], function(c){
-        return (c < 10 ? '0' : '') + c;
-    }).join(':');
+function now(d){
+    if('undefined' === typeof(d)) d = new Date();
+    var padded = $.map(
+        [
+            d.getMonth() + 1,
+            d.getDate(),
+            d.getHours(),
+            d.getMinutes(),
+            d.getSeconds()
+        ],
+        function(c){
+            return (c < 10 ? '0' : '') + c;
+        }
+    );
+    padded.unshift(d.getFullYear());
+    return padded.slice(0, 3).join('-') + ' ' +  padded.slice(3).join(':');
 }
 
 // Log arguments to console, show first argumentst if it's a string.
 function log(msg){
     console.log(arguments);
-    if('string' === typeof msg) $('#log').prepend($('<div>').html(time() + ' ' + msg));
+    if('string' === typeof msg) $('#log').prepend($('<div>').html(now() + ' ' + msg));
 }
 
 // JSONp request with data and callback
@@ -63,6 +74,39 @@ function colorchoice(elements){
     );
 }
 
+// A graph that displays proposals, and annotates them when they become more.
+function Graph(div){
+    this.dygraph = new Dygraph(div, [[0]], {'labels': ['']});
+    this.data = [];
+}
+Graph.prototype.update = function(proposal){
+    var row = [proposal.time];
+    if('a' === proposal.table){
+        row.push(proposal.price);
+        row.push(null);
+    }else{
+        row.push(null);
+        row.push(proposal.price);
+    }
+    this.data.push(row);
+    var g = this.dygraph;
+    this.dygraph.updateOptions({
+        'file': this.data,
+        'drawPoints': true,
+        'connectSeparatedPoints': true,
+        'labels': [
+            'Time',
+            'a',
+            'b'
+        ]
+    });
+};
+Graph.prototype.annotate = function(proposal, annotation){
+    var annotations = this.dygraph.annotations();
+    annotations.push(annotation);
+    this.dygraph.setAnnotations(annotations);
+}
+
 // The market is divided into asset pairs.
 var pairs = [];
 // Return a pair if it exists, create a new one if it doesn't.
@@ -91,21 +135,10 @@ function getpair(colordef1, colordef2){
     ).end();
     marketdiv.append(returnpair);
     returnpair.find('table').tablesorter();
-    returnpair.graph = new Dygraph(
-        returnpair.find('.graph').get(0),
-        'Time, Price a->b, Price b->a' + "\n" +
-        {
-            'drawPoints': true,
-            'showRoller': true
-        }
+    returnpair.graph = new Graph(
+        returnpair.find('.graph').get(0)
     );
-    // FIXME
-    returnpair.graph.updateOptions({'file':
-        'Time, Price a->b, Price b->a' + "\n" +
-        '0,1,10' + "\n" +
-        '1,2,7' + "\n" +
-        '2,4,6'
-    });
+
     pairs.push(returnpair);
     return returnpair
 }
@@ -116,28 +149,29 @@ var proposals = {};
 function showproposal(proposal){
     var hash = $.sha256(JSON.stringify(proposal));
     var pair = getpair(proposal.give.colordef, proposal.take.colordef);
-    var table;
-    var row;
-    var price;
-
-    // Catalogue row for future use.
-    proposals[hash] = proposal;
+    proposal.time = new Date();
 
     if(proposal.give.colordef === pair.colordefs[0]){
-        price = proposal.give.quantity / proposal.take.quantity;
-        table = 'a';
+        proposal.price = proposal.give.quantity / proposal.take.quantity;
+        proposal.table = 'a';
     }else{
-        price = proposal.take.quantity / proposal.give.quantity;
-        table = 'b';
+        proposal.price = proposal.take.quantity / proposal.give.quantity;
+        proposal.table = 'b';
     }
 
-    row = $('<tr>').append(
-        $('<td>').text(time()),
+    // Create proposal row.
+    proposal.row = $('<tr>').append(
+        $('<td>').text(now(proposal.time)),
         $('<td>').text(proposal.give.quantity),
-        $('<td>').text(price),
+        $('<td>').text(proposal.price),
         $('<td>').text('none')
     );
-    proposals[hash]['row'] = row;
+
+    // Append the row and refresh the table.
+    pair.find('table.proposals' + proposal.table).find('tbody').
+        append(proposal.row).
+    end().trigger('update').trigger('sorton', [[[2, 0]]]).
+    find('thead tr th').eq(2).click();
 
     // Add proposal hash to the fulfil form.
     $('select.proposalhash').append(
@@ -150,10 +184,13 @@ function showproposal(proposal){
         )
     );
 
-    // Append the row and refresh the table.
-    pair.find('table.proposals' + table).find('tbody').append(row).end().
-    trigger('update').trigger('sorton', [[[2, 0]]]).
-    find('thead tr th').eq(2).click();
+    // Append the proposal to the graph.
+    pair.graph.update(proposal);
+    proposal.graph = pair.graph;
+
+    // Catalogue proposal for future use.
+    proposals[hash] = proposal;
+    return hash;
 }
 
 // Replace the proposal hash input with a dropdown selection of proposals.
@@ -183,9 +220,6 @@ function showfulfil(fulfil){
     var proposal = proposals[fulfil.proposalhash];
     if('undefined' === typeof(proposal)) return;
 
-    // Catalogue row for future use.
-    fulfils[hash] = fulfil;
-
     proposal.row.css('background-color', '#FF9999');
 
     // Add fulfil hash to the accept form.
@@ -198,6 +232,18 @@ function showfulfil(fulfil){
             colors[proposal.take.colordef]
         )
     );
+
+    // Note fulfil on graph.
+    proposal.graph.annotate(proposal, {
+        'series': proposal.table,
+        'x': proposal.time.getTime(),
+        'shortText': 'F',
+        'text': 'fulful'
+    });
+
+    // Catalogue row for future use.
+    fulfils[hash] = fulfil;
+    return hash;
 }
 
 // Replace the fulfil hash input with a dropdown selection of fulfils.
@@ -230,13 +276,25 @@ function showaccept(accept){
     var proposal = proposals[fulfil.proposalhash];
     if('undefined' === typeof(proposal)) return;
 
+    // Remove proposal hash from selections.
     $('select.fulfilhash').find(
         'option[value="' + accept.fulfilhash + '"]'
     ).remove();
     $('select.proposalhash').find(
         'option[value="' + fulfil.proposalhash + '"]'
     ).remove();
+
+    // Note accept on graph.
+    proposal.graph.annotate(proposal, {
+        'series': proposal.table,
+        'x': proposal.time.getTime(),
+        'shortText': 'A',
+        'text': 'accepted'
+    });
+
     proposal.row.css('background-color', '#99FF99');
+
+    // Watch for txid.
     log('watching for tx ' + accept.txid, accept);
     watchfortx(accept.txid, function(){
         proposal.row.remove();
@@ -245,6 +303,19 @@ function showaccept(accept){
             accept.txid +
             '">look at that</a>'
         );
+
+        // Note broadcast on graph.
+        proposal.graph.annotate(proposal, {
+            'series': proposal.table,
+            'x': proposal.time.getTime(),
+            'shortText': 'B',
+            'text': 'broadcasted',
+            'clickHandler': function(){
+                window.open(
+                    'https://test.helloblock.io/transactions/' + accept.txid
+                );
+            }
+        });
     });
 }
 
@@ -292,6 +363,7 @@ function sendproposal(form){
             'address': take.find('input.address').val(),
         }
     });
+    return;
     jsonp(
         'send',
         {'subject': 'proposal', 'body': proposal},
@@ -451,5 +523,132 @@ $(function(){
     $('#acceptfulfil').click(function(e){acceptfulfil($(this).parent());});
 
     // Start getting messages.
-    getmessages();
+    //FIXME This is just to test the graph
+    //getmessages();
+    var ps = [
+        {
+            "give": {
+                "colordef": "obc:e738ac54b03a4f159e1412456bfb6b712e6c0730a73962d8e8fbcace07e8b031:0:260522",
+                "quantity": "20",
+                "utxos": [
+                    {
+                        "txid": "e738ac54b03a4f159e1412456bfb6b712e6c0730a73962d8e8fbcace07e8b031",
+                        "vout": 0,
+                        "scriptPubKey": "76a91446f83c9f3622e1ce816e7a7468c2079cc3a4ca6888ac"
+                    }
+                ]
+            },
+            "take": {
+                "colordef": "obc:ee8c695734be4971a99e8f036c2ae6c10a5696cbe39646f9739cca39d1c63e7d:0:260524",
+                "quantity": "100",
+                "address": "mwNy6yhCWHKMpvYJoP6vwufJZmftzFRh5L"
+            }
+        },
+        {
+            "give": {
+                "colordef": "obc:ee8c695734be4971a99e8f036c2ae6c10a5696cbe39646f9739cca39d1c63e7d:0:260524",
+                "quantity": "100",
+                "utxos": [
+                    {
+                        "txid": "e738ac54b03a4f159e1412456bfb6b712e6c0730a73962d8e8fbcace07e8b031",
+                        "vout": 0,
+                        "scriptPubKey": "76a91446f83c9f3622e1ce816e7a7468c2079cc3a4ca6888ac"
+                    }
+                ]
+            },
+            "take": {
+                "colordef": "obc:e738ac54b03a4f159e1412456bfb6b712e6c0730a73962d8e8fbcace07e8b031:0:260522",
+                "quantity": "50",
+                "address": "mwNy6yhCWHKMpvYJoP6vwufJZmftzFRh5L"
+            }
+        },
+        {
+            "give": {
+                "colordef": "obc:e738ac54b03a4f159e1412456bfb6b712e6c0730a73962d8e8fbcace07e8b031:0:260522",
+                "quantity": "20",
+                "utxos": [
+                    {
+                        "txid": "e738ac54b03a4f159e1412456bfb6b712e6c0730a73962d8e8fbcace07e8b031",
+                        "vout": 0,
+                        "scriptPubKey": "76a91446f83c9f3622e1ce816e7a7468c2079cc3a4ca6888ac"
+                    }
+                ]
+            },
+            "take": {
+                "colordef": "obc:ee8c695734be4971a99e8f036c2ae6c10a5696cbe39646f9739cca39d1c63e7d:0:260524",
+                "quantity": "90",
+                "address": "mwNy6yhCWHKMpvYJoP6vwufJZmftzFRh5L"
+            }
+        },
+        {
+            "give": {
+                "colordef": "obc:ee8c695734be4971a99e8f036c2ae6c10a5696cbe39646f9739cca39d1c63e7d:0:260524",
+                "quantity": "100",
+                "utxos": [
+                    {
+                        "txid": "e738ac54b03a4f159e1412456bfb6b712e6c0730a73962d8e8fbcace07e8b031",
+                        "vout": 0,
+                        "scriptPubKey": "76a91446f83c9f3622e1ce816e7a7468c2079cc3a4ca6888ac"
+                    }
+                ]
+            },
+            "take": {
+                "colordef": "obc:e738ac54b03a4f159e1412456bfb6b712e6c0730a73962d8e8fbcace07e8b031:0:260522",
+                "quantity": "40",
+                "address": "mwNy6yhCWHKMpvYJoP6vwufJZmftzFRh5L"
+            }
+        },
+        {
+            "give": {
+                "colordef": "obc:e738ac54b03a4f159e1412456bfb6b712e6c0730a73962d8e8fbcace07e8b031:0:260522",
+                "quantity": "20",
+                "utxos": [
+                    {
+                        "txid": "e738ac54b03a4f159e1412456bfb6b712e6c0730a73962d8e8fbcace07e8b031",
+                        "vout": 0,
+                        "scriptPubKey": "76a91446f83c9f3622e1ce816e7a7468c2079cc3a4ca6888ac"
+                    }
+                ]
+            },
+            "take": {
+                "colordef": "obc:ee8c695734be4971a99e8f036c2ae6c10a5696cbe39646f9739cca39d1c63e7d:0:260524",
+                "quantity": "80",
+                "address": "mwNy6yhCWHKMpvYJoP6vwufJZmftzFRh5L"
+            }
+        },
+        {
+            "give": {
+                "colordef": "obc:ee8c695734be4971a99e8f036c2ae6c10a5696cbe39646f9739cca39d1c63e7d:0:260524",
+                "quantity": "100",
+                "utxos": [
+                    {
+                        "txid": "e738ac54b03a4f159e1412456bfb6b712e6c0730a73962d8e8fbcace07e8b031",
+                        "vout": 0,
+                        "scriptPubKey": "76a91446f83c9f3622e1ce816e7a7468c2079cc3a4ca6888ac"
+                    }
+                ]
+            },
+            "take": {
+                "colordef": "obc:e738ac54b03a4f159e1412456bfb6b712e6c0730a73962d8e8fbcace07e8b031:0:260522",
+                "quantity": "30",
+                "address": "mwNy6yhCWHKMpvYJoP6vwufJZmftzFRh5L"
+            }
+        }
+    ];
+    window.ps = ps;
+    var pidx = 0;
+    var fs = [];
+    var as = [];
+    $('body').keypress(function(e){
+        if(112 === e.which){
+            var prop = ps[pidx++ % ps.length];
+            prop.take.quantity = parseInt(prop.take.quantity, 10) + Math.floor(Math.random() * 10 - 5);
+            prop.give.quantity = parseInt(prop.give.quantity, 10) + Math.floor(Math.random() * 10 - 5);
+            fs.unshift(showproposal({'give': prop.give, 'take': prop.take}));
+        }else if(102 === e.which){
+            as.unshift(showfulfil({'proposalhash': fs.pop()}));
+        }else if(97 === e.which){
+            showaccept({'fulfilhash': as.pop()});
+        }else log('' + e.which, e);
+    });
 });
