@@ -181,6 +181,7 @@ var fulfils = {};
 function showfulfil(fulfil){
     var hash = $.sha256(JSON.stringify(fulfil));
     var proposal = proposals[fulfil.proposalhash];
+    if('undefined' === typeof(proposal)) return;
 
     // Catalogue row for future use.
     fulfils[hash] = fulfil;
@@ -226,6 +227,8 @@ function fulfilchoice(){
 function showaccept(accept){
     var fulfil = fulfils[accept.fulfilhash];
     var proposal = proposals[fulfil.proposalhash];
+    if([typeof(fulfil), typeof(proposal)].indexOf('undefined') > -1) return;
+
     $('select.fulfilhash').find(
         'option[value="' + accept.fulfilhash + '"]'
     ).remove();
@@ -255,7 +258,7 @@ function getmessages(){
                 showaccept(message.body);
             }
         });
-        //setTimeout('getmessages()', 1000);
+        setTimeout('getmessages()', 1000);
     });
 }
 
@@ -337,13 +340,13 @@ function sendfulfil(form){
         jsonp(
             'signrawtransaction',
             {
-                'rawtx': tx.hex,
-                'inputs': $.merge(proposal.give.utxos, give.utxos),
+                'rawtx': tx,
+                'inputs': JSON.stringify($.merge(proposal.give.utxos, give.utxos)),
                 'keys': give.pvtkeys
             },
             function(tx){
                 log(
-                    (tx.complete ? 'completely' : 'partially') + ' signed',
+                    (tx.complete ? 'completely' : 'partially') + ' signed: ',
                     tx.hex
                 );
                 var fulfil = {
@@ -392,15 +395,16 @@ function acceptfulfil(form){
     jsonp(
         'signrawtransaction',
         {
-            'rawtx': tx.hex,
-            'inputs': fulfil.utxos,
+            'rawtx': fulfil.hex,
+            'inputs': JSON.stringify(fulfil.utxos),
             'keys': give.pvtkeys
         },
         function(tx){
             log(
                 (tx.complete ? 'completely' : 'partially') + ' signed',
-                tx.hex
+                tx
             );
+            return;
             jsonp('sendrawtransaction', {'rawtx': tx.hex}, function(txid){
                 jsonp(
                     'send',
