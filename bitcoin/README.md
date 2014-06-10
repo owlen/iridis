@@ -1,10 +1,11 @@
 Bitcoin module
 ==============
 
-The module needs to implement the following two functions:
+The module needs to implement a single function:
 
 - signrawtransaction(rawtx, txinputs, privatekeys)
-- sendrawtransaction(rawtx)
+
+The function tries to sign the transaction, and to broadcast it to the bitcoin network if it is fully signed. It returns an object with the full hex of the signed transaction, an indicator of completeness, and - if the transaction was broadcasted - its txid.
 
 We are experimenting with using bitcoinj, for SPV support, and we hope to soon add some tips and tricks here, but at the moment we are running with bitcoind.
 

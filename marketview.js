@@ -226,8 +226,9 @@ function fulfilchoice(){
 // Show an acceptance.
 function showaccept(accept){
     var fulfil = fulfils[accept.fulfilhash];
+    if('undefined' === typeof(fulfil)) return;
     var proposal = proposals[fulfil.proposalhash];
-    if([typeof(fulfil), typeof(proposal)].indexOf('undefined') > -1) return;
+    if('undefined' === typeof(proposal)) return;
 
     $('select.fulfilhash').find(
         'option[value="' + accept.fulfilhash + '"]'
@@ -236,6 +237,7 @@ function showaccept(accept){
         'option[value="' + fulfil.proposalhash + '"]'
     ).remove();
     proposal.row.css('background-color', '#99FF99');
+    log('watching for tx ' + accept.txid, accept);
     watchfortx(accept.txid, function(){
         proposal.row.remove();
         log(
@@ -246,9 +248,19 @@ function showaccept(accept){
     });
 }
 
+// Message sorter, so we always get proposals, then fulfils and then accepts.
+var MESSAGE_ORDER = ['proposal', 'fulfil', 'accept']
+function messagesort(a, b){
+    if(a.subject === b.subject) return 0;
+    return (
+        MESSAGE_ORDER.indexOf(a.subject) > MESSAGE_ORDER.indexOf(b.subject)
+    ) ? 1 : -1;
+}
+
 // Get messages from queue.
 function getmessages(){
     jsonp('receive', {}, function(messages){
+        messages.sort(messagesort);
         $.each(messages, function(i, message){
             if('proposal' === message.subject && -1 === message.body.scheme){
                 showproposal(message.body);
@@ -346,8 +358,8 @@ function sendfulfil(form){
             },
             function(tx){
                 log(
-                    (tx.complete ? 'completely' : 'partially') + ' signed: ',
-                    tx.hex
+                    (tx.complete ? 'completely' : 'partially') + ' signed',
+                    tx
                 );
                 var fulfil = {
                     'proposalhash': proposalhash,
@@ -400,27 +412,21 @@ function acceptfulfil(form){
             'keys': give.pvtkeys
         },
         function(tx){
-            log(
-                (tx.complete ? 'completely' : 'partially') + ' signed',
-                tx
+            if(true !== tx.complete){
+                log('Was unable to sign the fulfil', tx);
+                return;
+            }
+            log('Sending signed fulfil', tx);
+            jsonp(
+                'send',
+                {
+                    'subject': 'accept',
+                    'body': JSON.stringify($.extend(tx, {'fulfilhash': fulfilhash}))
+                },
+                function(msgid){
+                    log('sending accept in msg ' + msgid, tx);
+                }
             );
-            return;
-            jsonp('sendrawtransaction', {'rawtx': tx.hex}, function(txid){
-                jsonp(
-                    'send',
-                    {
-                        'subject': 'accept',
-                        'body': JSON.stringify({
-                            'fulfilhash': fulfilhash,
-                            'txid': txid,
-                            'hex': tx.hex
-                        })
-                    },
-                    function(msgid){
-                        log('sending accept in msg ' + msgid, fulfilhash, tx.hex);
-                    }
-                );
-            });
         }
     );
 }

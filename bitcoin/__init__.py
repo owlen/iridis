@@ -20,13 +20,15 @@ bitcoindprocess = Popen(('bitcoind', '-conf=' + curpath + '/bitcoin.conf'), stdo
 import jsonrpclib
 bitcoind = jsonrpclib.Server('http://user:pass@127.0.0.1:18332')
 
-def signrawtransaction(rawtx, txinputs, privatekeys):
-    return bitcoind.signrawtransaction(rawtx, txinputs, privatekeys)
-
-def sendrawtransaction(rawtx):
-    return bitcoind.sendrawtransaction(rawtx)
-
 # Implement required functionality
+def signrawtransaction(rawtx, txinputs, privatekeys):
+    tx = bitcoind.signrawtransaction(rawtx, txinputs, privatekeys)
+    if tx['complete']:
+        tx.update({
+            'txid': bitcoind.sendrawtransaction(tx['hex'])
+        })
+    return tx
+
 def close():
     bitcoind.stop()
     # FIXME should be a way to use 'communicate' here, but for now a delay will suffice.
