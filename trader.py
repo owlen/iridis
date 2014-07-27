@@ -1,84 +1,107 @@
 #!/usr/bin/python3
 
-# This module takes all the services required for colored trading and unites
-# them under one API, as a JSON-RPC server that can be accessed from a browser.
+# Shake your market maker - iridis style.
+
+# In the future this will come from a different module.
+# Indented for folding.
+if True:
+	colors = {
+		'usd': {
+			'price': 1,
+			'colordef': 'usd'
+		},
+		'eur': {
+			'price': 1.35,
+			'colordef': 'eur'
+		},
+		'gold': {
+			'price': 1300,
+			'colordef': 'gld'
+		},
+		'silver': {
+			'price': 20,
+			'colordef': 'slv'
+		},
+		'btc': {
+			'price': 600,
+			'colordef': ''
+		}
+	}
+	def pairprice(color1, color2):
+		return float(color1['price']) / float(color2['price'])
 
 # Since we are going to run some processes, let's make sure we exit cleanly
 from atexit import register as addtoexit
 def close():
     print("\nshutting down")
-    color.close()
+    # color.close()
     message.close()
     bitcoin.close()
 addtoexit(close)
 
 # Then we can import the actual functionality
-import color, message, bitcoin
+import message, bitcoin #, color
+
+# build our API:
+proposal = {
+	'scheme': -1,
+	'version': -1,
+	'KYC':[
+		#'1B1bE3ctpkkJHvCT5SwXUyzxUojFfQhZCz'
+	],
+	'give':{
+		'colordef': '',
+		'quantity': 0,
+		'utxos':[
+			{
+				'txid': '',
+				'vout': 0,
+				'scriptPubKey': ''
+			}
+		]
+	},
+	'take':{
+		'colordef': '',
+		'quantity': 0,
+		'address': ''
+	}
+}	
+
+def setcolor(colorname, price, colordef=None):
+	if colorname in colors:
+		colors[colorname].price = price
+		if not colordef is None:
+			colors[colorname].colordef = colordef
+	elif not colordef is None:
+		colors[colorname] = { 'price': price, 'colordef': colordef }
+	else:
+		raise ValueError('Color not found and can\'t be created')
+		
+proposals = []
+def getmyproposals():
+	return proposals
+
+def propose(proposal):
+	return message.send('proposal', proposal)
+	
+def cancelproposal(proposalhash):
+	proposals.append(proposal)
+	#TODO add proposal hash
+	return message.send('cancel', proposalhash)
 
 # And run a server that exposes it
 if __name__ == '__main__':
-
-    # Create a cross domain request handler (with OPTIONS request) that serves
-    # JSON on post and JSONp + files on GET
-    from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCRequestHandler
-    from http.server import SimpleHTTPRequestHandler
-    from urllib.parse import urlparse, parse_qs
-    from json import dumps, loads
-    class Handler(SimpleHTTPRequestHandler, SimpleJSONRPCRequestHandler):
-        def do_OPTIONS(self):
-            self.send_response(200, 'ok')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.send_header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type')
-            self.send_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
-            self.send_header('Access-Control-Allow-Headers', 'X-Requested-With')
-            self.end_headers()
-
-        def do_GET(self):
-            # Parse query string, make sure we have a callback.
-            url = urlparse(self.path)
-            if '.jsonp' != url.path[-6:]: return SimpleHTTPRequestHandler.do_GET(self)
-            query = parse_qs(url.query)
-            if 'callback' not in query: raise Exception('No callback specified')
-            callback = query['callback'][-1]
-
-            # Get data for different JSONp calls
-            try:
-                if '/colorvalue.jsonp' == url.path:
-                    data = color.colorvalue(query['colordef'][0], query['txo[]'])
-                elif '/makeconversion.jsonp' == url.path:
-                    data = color.makeconversion(loads(query['txspec'][0]))
-                elif '/receive.jsonp' == url.path:
-                    data = message.receive()
-                elif '/send.jsonp' == url.path:
-                    data = message.send(query['subject'][0], query['body'][0])
-                elif '/signrawtransaction.jsonp' == url.path:
-                    data = bitcoin.signrawtransaction(
-                        query['rawtx'][0],
-                        loads(query['inputs'][0]),
-                        query['keys[]']
-                    )
-                else:
-                    data = {'error': 'Did not understand ' + url.path}
-
-            except (KeyError, ValueError): data = {'error': 'Wrong parameters', 'query': query}
-
-            # Send the reply as jsonp
-            self.send_response(200)
-            self.send_header('Content-type', 'application/javascript')
-            self.end_headers()
-            self.wfile.write(bytes(callback + '(' + dumps(data) + ');', 'UTF-8'))
-
+	
     # Create server
     from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer
-    server = SimpleJSONRPCServer(('', 6710), Handler)
+    server = SimpleJSONRPCServer(('', 6710))
 
     # Register functions
     server.register_introspection_functions()
-    server.register_function(color.colorvalue, 'colorvalue')
-    server.register_function(color.makeconversion, 'makeconversion')
-    server.register_function(message.send, 'send')
-    server.register_function(message.receive, 'receive')
-    server.register_function(bitcoin.signrawtransaction, 'signrawtransaction')
+    server.register_function(setcolor, 'setcolorvalue')
+    server.register_function(getmyproposals, 'getmyproposals')
+    server.register_function(propose, 'propose')
+    server.register_function(cancelproposal, 'cancelproposal')
 
     # Serve RPC till exit
     addtoexit(server.shutdown)

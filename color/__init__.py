@@ -6,19 +6,18 @@
 
 
 # Make sure the port is available
-port = 6711
-import socket
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-if 0 == sock.connect_ex(('localhost', port)):
-    sock.close()
-    raise Exception("port %d is in use, aborting" % (port,))
+port = 666
+# import socket
+# sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# if 0 == sock.connect_ex(('localhost', port)):
+    # sock.close()
+    # raise Exception("port %d is in use, aborting" % (port,))
 
-# Run ngccc-server
-from subprocess import Popen, PIPE
-from os import path
-curpath = path.dirname(path.abspath(__file__))
-# ngcccprocess = Popen(('python', curpath + '/ngcccbase/ngccc-server.py', 'localhost', str(port)), stdout=PIPE)
-ngcccprocess = Popen(('C:\\Python27\\python.exe', curpath + '/ngcccbase/ngccc-server.py', 'localhost', str(port)))
+# # Run ngccc-server
+# from subprocess import Popen, PIPE
+# from os import path
+# curpath = path.dirname(path.abspath(__file__))
+# ngcccprocess = Popen('java -jar', curpath + '/color/colorserver-jar-with-dependencies.jar')
 
 # Connect to its JSON-RPC server
 from jsonrpclib import Server

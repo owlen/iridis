@@ -1,0 +1,4 @@
+$ curl --data-binary '{"jsonrpc": "2.0", "id":"curltest", "method": "getmyproposals", "params": [] }' localhost:6710
+
+Output:
+{"result": [], "jsonrpc": "2.0", "id": "curltest"}

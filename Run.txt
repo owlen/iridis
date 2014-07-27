@@ -1,0 +1,7 @@
+cd c:\dudu\CC\Iridis
+c:
+
+c:\Python34\python.exe trader.py
+
+http://localhost:6710/
+
