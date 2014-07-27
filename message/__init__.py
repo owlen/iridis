@@ -15,7 +15,8 @@ if 0 == sock.connect_ex(('localhost', port)):
 from subprocess import Popen, DEVNULL
 from os import path
 curpath = path.dirname(path.abspath(__file__))
-bitmessageprocess = Popen(('python', curpath + '/PyBitmessage/src/bitmessagemain.py'), stdout=DEVNULL)
+# bitmessageprocess = Popen(('python', curpath + '/PyBitmessage/src/bitmessagemain.py'), stdout=DEVNULL)
+bitmessageprocess = Popen('C:\\Dudu\\CC\\BitMessage\\Bitmessage.exe')
 
 # Connect to its XML-RPC server
 import xmlrpc.client

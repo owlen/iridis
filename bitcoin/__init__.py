@@ -14,7 +14,8 @@ if 0 == sock.connect_ex(('localhost', port)):
 from subprocess import Popen, PIPE
 from os import path
 curpath = path.dirname(path.abspath(__file__))
-bitcoindprocess = Popen(('bitcoind', '-conf=' + curpath + '/bitcoin.conf'), stdout=PIPE)
+# bitcoindprocess = Popen(('bitcoind', '-conf=' + curpath + '/bitcoin.conf'), stdout=PIPE)
+bitcoindprocess = Popen(('C:\\Program Files\\Bitcoin\\bitcoin-qt.exe', '-conf=' + curpath + '/bitcoin.conf'), stdout=PIPE)
 
 # Connect to its JSON-RPC server
 import jsonrpclib
