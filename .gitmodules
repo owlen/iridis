@@ -7,3 +7,9 @@
 [submodule "multibit/multibit"]
 	path = multibit/multibit
 	url = https://github.com/rottev/multibit
+[submodule "color/colorserver"]
+	path = color/colorserver
+	url = https://github.com/rottev/colorserver
+[submodule "multibit/ccissue"]
+	path = multibit/ccissue
+	url = https://github.com/rottev/ccissue
