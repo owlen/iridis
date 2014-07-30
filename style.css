@@ -1,0 +1,106 @@
+#nojs{
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    background: yellow;
+    color: red;
+}
+#log{
+    width: 100%;
+    background: yellow;
+    color: black;
+    float: left;
+}
+
+#market{
+    width: 75em;
+    border: 0.5em solid #CCCCCC;
+    padding: 1em;
+    overflow: auto;
+}
+div.pair h1{
+    text-align: center;
+}
+div.pair div.graph{
+    clear: both;
+    width: 70em;
+    height: 100px;
+    margin-bottom: 2em;
+}
+div.pair{
+    clear: both;
+}
+div.pair table{
+    min-width: 45em;
+}
+div.pair table.proposalsa{
+    float: left;
+}
+div.pair table.proposalsb{
+    float: right;
+}
+
+#proposaldiv, #fulfildiv, #acceptdiv{
+    width: 24em;
+    height: 30em;
+    border: 0.5em solid black;
+    padding: 0.5em;
+    overflow: auto;
+    text-align: center;
+    float: left;
+}
+#proposaldiv{
+    border-color: #CCCCFF;
+}
+#fulfildiv{
+    border-color: #FFCCCC;
+}
+#acceptdiv{
+    border-color: #CCFFCC;
+}
+#proposaldiv div.give, #fulfildiv div.take, #acceptdiv div.give{
+    float: left;
+}
+#proposaldiv div.take, #fulfildiv div.give, #acceptdiv div.take{
+    float: right;
+}
+
+table.tablesorter {
+	font-size: 12px;
+	background-color: #9999FF;
+	border: 1px solid #000;
+}
+table.tablesorter th {
+	text-align: left;
+	padding: 5px;
+	background-color: #6E6E6E;
+}
+table.tablesorter td {
+	color: #FFF;
+	padding: 5px;
+}
+table.tablesorter .even {
+	background-color: #3D3D3D;
+}
+table.tablesorter .odd {
+	background-color: #6E6E6E;
+}
+table.tablesorter .header {
+	background-image: url(img/bg.png);
+	background-repeat: no-repeat;
+	border-left: 1px solid #FFF;
+	border-right: 1px solid #000;
+	border-top: 1px solid #FFF;
+	padding-left: 30px;
+	padding-top: 8px;
+	height: auto;
+}
+table.tablesorter .headerSortUp {
+	background-image: url(img/asc.png);
+	background-repeat: no-repeat;
+}
+table.tablesorter .headerSortDown {
+	background-image: url(img/desc.png);
+	background-repeat: no-repeat;
+}

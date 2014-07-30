@@ -40,7 +40,7 @@ def send(subject, body):
 
 # Get a list of all new messages
 from json import loads as jsloads
-def receive():
+def receive(trash=True):
     messages = []
     inbox = jsloads(bitmessage.getAllInboxMessages())['inboxMessages']
     for msgid in (m['msgid'] for m in inbox):
@@ -51,7 +51,8 @@ def receive():
             try: body = jsloads(body)
             except ValueError: pass
             messages.append({'subject': subject, 'body': body, 'fromaddress': fromaddress})
-        bitmessage.trashMessage(msgid)
+        if trash:
+            bitmessage.trashMessage(msgid)
     if len(messages) > 0: print('transfered incoming messages: ', messages)
     return messages
 

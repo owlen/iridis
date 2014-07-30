@@ -3,217 +3,134 @@
     <head>
         <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
         <meta charset="utf-8">
-        <title>Iridis Trader</title>
-        <meta name="description" content="Iridis trading Web app">
-        <style>
-            #nojs{
-                position: absolute;
-                top: 0px;
-                left: 0px;
-                width: 100%;
-                background: yellow;
-                color: red;
-            }
-            #log{
-                width: 100%;
-                background: yellow;
-                color: black;
-            }
-        </style>
+        <title>Iridis Market Viewer</title>
+        <meta name="description" content="Iridis Market Viewer">
         <script src="http://code.jquery.com/jquery-latest.min.js"></script>
-        <script type="text/javascript">
-
-var wallet = {
-    red: {
-        definition: 'obc:1737d32b3bfdd06a177435a00e4ddd8befe804daece3cfa19508f1ec7a2df2a9:0:241614',
-        utxos: [
-            {
-                txid: '1737d32b3bfdd06a177435a00e4ddd8befe804daece3cfa19508f1ec7a2df2a9',
-                vout: 0,
-                scriptPubKey: '76a914701c51bae66dee0733e7da0e59eb85c3c7e4aba088ac'
-            }
-        ],
-        addresses: [
-            'mqjjuCJBBHx8qb6aUMLpr8BW1kgpBasxqW'
-        ],
-        prvkeys: [
-            '93Pf466pBtm66oQDcf19NxK7PdNkGyNVrpMqz2xwGgUqwZyo51D'
-        ]
-    },
-    blue: {
-        definition: 'obc:f9931ace552776defae1114f551cfb09a6453f13956e042e8d78a8fd42af804b:0:241616',
-        utxos: [
-            {
-                txid: 'f9931ace552776defae1114f551cfb09a6453f13956e042e8d78a8fd42af804b',
-                vout: 0,
-                scriptPubKey: '76a91418d1a2a45606ab1df27385db5a567c3776870fe388ac'
-            }
-        ],
-        addresses: [
-            'mhnBeNiuiQtkaPVaBUYkx6L3oAmboxjiZc'
-        ],
-        prvkeys: [
-            '92uLoBbJMvYKZtXPNLgG5n4MsbMJjMxJ1x1z4H5BtTJG1MYPJ19'
-        ]
-    }
-};
-
-var filter = {
-    'give': {
-        'definition': wallet.red.definition,
-        'quantity': 10,
-        'utxos': wallet.red.utxos
-    },
-    'take': {
-        'definition': wallet.blue.definition,
-        'quantity': 1,
-        'address': wallet.blue.addresses[0]
-    }
-};
-
-var otherfilter = {
-    'give': {
-        'definition': wallet.blue.definition,
-        'quantity': 1,
-        'utxos': wallet.blue.utxos
-    },
-    'take': {
-        'definition': wallet.red.definition,
-        'quantity': 10,
-        'address': wallet.red.addresses[0]
-    }
-};
-
-function log(msg){
-    console.log(arguments);
-    if('string' === typeof msg) $('#log').prepend($('<div>').text(msg));
-};
-
-function jsonp(method, data, callback){
-    $.ajax({
-        url: method + '.jsonp',
-        dataType: 'jsonp',
-        type: 'GET',
-        data: data,
-        success:function(data){
-            if(null !== data && 'string' === typeof data.error) log(data.error, arguments);
-            callback(data);
-        },
-        error:function(){
-            log('Unable to retrieve ' + method, arguments);
-        }
-    });
-};
-
-function scancolor(color, callback){
-    if('number' !== typeof(color.checking)) color.checking = 0;
-    else if(0 < color.checking) return false;
-    color.value = 0;
-    $.each(color.utxos, function(i, utxo){
-        color.checking++;
-        jsonp('colorvalue', {'colordef': color.definition, 'txo': [utxo.txid, utxo.vout]}, function(value){
-            color.value += value;
-            if(0 === --color.checking) callback(color);
-        });
-    });
-}
-
-function scanwallet(colors){
-    $.each(colors, function(colorname, color){
-        color.name = colorname;
-        scancolor(color, function(color){
-            if(0 === color.checking) log('you have ' + color.value + ' ' + color.name);
-        });
-    });
-}
-
-function txotolist(txo){
-    return [txo.txid, txo.vout];
-}
-
-function fulfilproposal(proposal){
-    $('<button>').text('Bob: fulfil proposal').click(function(e){
-        $(e.target).remove();
-        proposal.spec = {};
-        proposal.spec.inputs = {};
-        proposal.spec.inputs[proposal.give.definition] = [$.map(proposal.give.utxos, txotolist)];
-        proposal.spec.inputs[wallet.blue.definition] = [$.map(wallet.blue.utxos, txotolist)];
-        proposal.spec.targets = [
-            [
-                proposal.take.address,
-                proposal.take.definition,
-                proposal.take.quantity
-            ], [
-                wallet.red.addresses[0],
-                wallet.red.definition,
-                10
-            ]
-        ];
-        jsonp('makeconversion', {'txspec': JSON.stringify(proposal.spec)}, function(hex){
-            var inputs = []
-            $.each(wallet.blue.utxos, function(i, utxo){
-                inputs.push({'txid': utxo.txid, 'vout': utxo.vout, 'scriptPubKey': utxo.scriptPubKey})
-            });
-            jsonp('signrawtransaction', {'rawtx': hex, 'inputs': JSON.stringify(inputs), 'keys': wallet.blue.prvkeys}, function(tx){
-                log((tx.complete ? 'completely' : 'partially') + ' signed: ' + tx.hex, tx);
-                jsonp('send', {'subject': 'fulfil', 'body': tx.hex}, function(){ log('Fulfil sent'); });
-            });
-        });
-    }).appendTo($('#content'));
-}
-
-function filterproposal(filter, proposal){
-    if(filter.give.definition !== proposal.take.definition) return false;
-    if(filter.take.definition !== proposal.give.definition) return false;
-    if(
-        filter.give.quantity / filter.take.quantity <
-        proposal.take.quantity / proposal.give.quantity
-    ) return false;
-
-    scancolor(proposal.give, function(color){
-        if(proposal.give.quantity > color.value) return false;
-        fulfilproposal(proposal);
-    });
-}
-
-function getmessages(){
-    jsonp('receive', {}, function(messages){
-        $.each(messages, function(i, message){
-            if('proposal' === message.subject){
-                filterproposal(otherfilter, message.body);
-            }else if('fulfil' === message.subject){
-                var inputs = []
-                $.each(wallet.red.utxos, function(i, utxo){
-                    inputs.push({'txid': utxo.txid, 'vout': utxo.vout, 'scriptPubKey': utxo.scriptPubKey})
-                });
-                jsonp('signrawtransaction', {'rawtx': message.body, 'inputs': JSON.stringify(inputs), 'keys': wallet.red.prvkeys}, function(tx){
-                    log((tx.complete ? 'completely' : 'partially') + ' signed: ' + tx.hex, tx);
-                });
-            }
-            log('received: ' + message.subject, message);
-        });
-        setTimeout('getmessages()', 1000);
-    });
-}
-
-$(function(){
-    $('#nojs').remove();
-    log('js detected');
-    scanwallet(wallet);
-    getmessages();
-    $('<button>').text('Alice: send proposal').click(function(){
-        jsonp('send', {'subject': 'proposal', 'body': JSON.stringify(filter)}, function(){ log('Proposal sent'); });
-    }).appendTo($('#content'));
-});
-
-        </script>
+        <script src="https://rawgit.com/christianbach/tablesorter/master/jquery.tablesorter.min.js"></script>
+        <script src="https://rawgit.com/alexweber/jquery.sha256/master/jquery.sha256.min.js"></script>
+        <script src="http://dygraphs.com/dygraph-combined.js"></script>
+        <script src="marketview.js"></script>
+        <link rel="stylesheet" type="text/css" href="style.css">
     </head>
     <body>
-        <div id="nojs">Either you have JavaScript disabled, or we have a serious bug.</div>
-        <div id="content"></div>
+        <div id="nojs">If you are connected to the Internet and have JavaScript enabled then we have a showstopping bug.</div>
+        <div id="market"></div>
+        <div class="pair" style="display:none;">
+            <h1>color vs color</h1>
+            <div class="graph"></div>
+            <table class="proposalsa tablesorter">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Pledge</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="display: none;">
+                        <td>Time</td>
+                        <td>Quantity</td>
+                        <td>Price</td>
+                        <td>Pledge</td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="proposalsb tablesorter">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Pledge</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="display: none;">
+                        <td>Time</td>
+                        <td>Quantity</td>
+                        <td>Price</td>
+                        <td>Pledge</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="proposaldiv">
+            <h2>Make a proposal</h2>
+            <button id="sendproposal">send it</button>
+            <br>
+            <div class="give">
+                <h3>Give</h3>
+                <p>colordef</p>
+                <input class="colordef">
+                <p>quantity</p>
+                <input class="quantity">
+                <p>utxos</p>
+                <textarea class="utxos">[{&quot;txid&quot;: &quot;e738ac54b03a4f159e1412456bfb6b712e6c0730a73962d8e8fbcace07e8b031&quot;, &quot;vout&quot;: 0, &quot;scriptPubKey&quot;: &quot;76a91446f83c9f3622e1ce816e7a7468c2079cc3a4ca6888ac&quot;}]</textarea>
+            </div>
+            <div class="take">
+                <h3>Take</h3>
+                <p>colordef</p>
+                <input class="colordef">
+                <p>quantity</p>
+                <input class="quantity">
+                <p>address</p>
+                <input class="address" value="mwNy6yhCWHKMpvYJoP6vwufJZmftzFRh5L">
+            </div>
+        </div>
+        <div id="fulfildiv">
+            <h2>Fulfil a proposal</h2>
+            <input class="proposalhash">
+            <button id="sendfulfil">send it</button>
+            <br>
+            <div class="take">
+                <h3>Take</h3>
+                <p>colordef</p>
+                <input class="colordef">
+                <p>quantity</p>
+                <input class="quantity">
+                <p>address</p>
+                <input class="address" value="mvu63M1HGnY7RnoXtxdFNxUKuFXXLaL4zZ">
+            </div>
+            <div class="give">
+                <h3>Give</h3>
+                <p>colordef</p>
+                <input class="colordef">
+                <p>quantity</p>
+                <input class="quantity">
+                <p>utxos</p>
+                <textarea class="utxos">[{&quot;txid&quot;: &quot;ee8c695734be4971a99e8f036c2ae6c10a5696cbe39646f9739cca39d1c63e7d&quot;, &quot;vout&quot;: 0, &quot;scriptPubKey&quot;: &quot;76a91437d2a394eb9f3206f2c349d58fe7cf205f942f1e88ac&quot;}]</textarea>
+                <p>private keys</p>
+                <input class="pvtkeys" value="[&quot;92hUBpj44jNvyE8itDsss8Gas77Xw1jazsky75zaTsWySA1qqN7&quot;, &quot;92pKvLMZBAPEi8yqr3NDwRpWBSTZuUMEhKcnpZFg1eX4QtGmTsD&quot;]">
+            </div>
+        </div>
+        <div id="acceptdiv">
+            <h2>Accept a fulfil</h2>
+            <input class="fulfilhash">
+            <button id="acceptfulfil">accept it</button>
+            <br>
+            <div class="take">
+                <h3>Take</h3>
+                <p>colordef</p>
+                <input class="colordef">
+                <p>quantity</p>
+                <input class="quantity">
+                <p>address</p>
+                <input class="address" value="test address">
+            </div>
+            <div class="give">
+                <h3>Give</h3>
+                <p>colordef</p>
+                <input class="colordef">
+                <p>quantity</p>
+                <input class="quantity">
+                <p>utxos</p>
+                <textarea class="utxos">[{"txid": "test txid", "vout": 0, "scriptPubKey": "test scriptpubkey"}]</textarea>
+                <p>private keys</p>
+                <input class="pvtkeys" value="[&quot;9295BAg3nQokF2ZMcfRs5juzRLXPuoz9RiCSD9cq6e5WAiGP2av&quot;, &quot;92t1DWV7qHxoZX9i7NxeMtpKD4WXdUG1HHAR2uLEtxJv6FiNJxf&quot;]">
+            </div>
+        </div>
+        <br>
         <div id="log"></div>
     </body>
 </html>
-<!--
-vim: ft=javascript
--->
